@@ -3,7 +3,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  height: 100%;
 }
 
 .toolbar {
@@ -14,12 +14,18 @@
       container-text-color: var(--mat-sys-on-primary),
     )
   );
+  position: relative;
+  z-index: 2;
 }
 
 .brand {
   color: inherit;
   font: var(--mat-sys-title-large);
   text-decoration: none;
+}
+
+.spacer {
+  flex: 1;
 }
 
 .signed-in-as {
@@ -30,11 +36,47 @@
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
-.spacer {
+.container {
   flex: 1;
 }
 
+.nav {
+  width: 240px;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0;
+}
+
+.soon-heading {
+  margin: 16px 16px 4px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.soon {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 16px;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px;
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-body-large);
+  }
+}
+
+.milestone {
+  font: var(--mat-sys-label-small);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 999px;
+  padding: 2px 8px;
+  align-self: center;
+}
+
 .content {
-  flex: 1;
   padding: 24px;
+  max-width: 1100px;
 }

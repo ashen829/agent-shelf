@@ -26,14 +26,20 @@ describe('App routes', () => {
     await done;
   }
 
-  it('shows the shell with the company name and the home page when signed in', async () => {
+  it('shows the shell with the company name and the dashboard when signed in', async () => {
     await signedIn();
     const harness = await RouterTestingHarness.create('/');
+    // routerLinkActive marks the current link one change-detection pass after navigation.
+    harness.detectChanges();
     const page = harness.fixture.nativeElement as HTMLElement;
 
     expect(page.querySelector('mat-toolbar .brand')?.textContent).toContain('AgentShelf');
     expect(page.querySelector('mat-toolbar .account')?.textContent).toContain('Acme Hardware');
-    expect(page.querySelector('main h1')?.textContent).toContain('Welcome to AgentShelf');
+    expect(page.querySelector('main h1')?.textContent).toContain('Welcome, Acme Hardware');
+    expect(
+      page.querySelector('[role=navigation][aria-label=Main] a[aria-current=page]')?.textContent,
+    ).toContain('Dashboard');
+    expect(page.querySelectorAll('[role=navigation], nav')).toHaveLength(1);
   });
 
   it('sends signed-out users to login and remembers where they were going', async () => {

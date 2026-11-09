@@ -72,9 +72,82 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      # ESLint, Prettier check, Vitest unit tests, production build.
+      # Generated API client up to date, ESLint, e2e type check, Prettier, Vitest, production build.
       - name: Check
         run: npm run check
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        # Keep in sync with infra/docker-compose.yml.
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_DB: agentshelf
+          POSTGRES_USER: agentshelf
+          # Throwaway database that only lives for this job: not a secret.
+          POSTGRES_PASSWORD: e2e-only-password
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U agentshelf -d agentshelf"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      # Read by the backend's `local` profile (see e2e/start-backend.sh).
+      POSTGRES_DB: agentshelf
+      POSTGRES_USER: agentshelf
+      POSTGRES_PASSWORD: e2e-only-password
+      POSTGRES_PORT: "5432"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      # The backend job runs all backend tests; here we only need the runnable jar.
+      - name: Build backend jar
+        working-directory: backend
+        run: ./mvnw -B -ntp -DskipTests package
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install npm from packageManager
+        working-directory: frontend
+        run: npm install -g "$(node -p "require('./package.json').packageManager")"
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright
+        working-directory: frontend
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
 
   dependency-scan:
     name: Dependency vulnerability scan
