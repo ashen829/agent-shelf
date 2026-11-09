@@ -77,7 +77,8 @@ docs/               ROADMAP.md, ARCHITECTURE.md, PRODUCT.md, adr/
 
 ## Commands
 Fill these in during M0 and keep them current.
-- Requirements: JDK 25 (`JAVA_HOME` must point to it), Docker running, Node 22+.
+- Requirements: JDK 25 (`JAVA_HOME` must point to it), Docker running,
+  Node 22.22.3+ or 24.15+ (version pinned in `frontend/.nvmrc`).
 - First-time setup: `cp infra/.env.example infra/.env` and set `POSTGRES_PASSWORD`.
 - Start infrastructure: `docker compose -f infra/docker-compose.yml up -d --wait`
 - Run backend: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local`
@@ -86,14 +87,17 @@ Fill these in during M0 and keep them current.
 - Full backend check: `cd backend && ./mvnw clean verify` (format, NullAway, module verification,
   unit tests and Testcontainers integration tests)
 - Dependency vulnerability scan (needs `brew install osv-scanner`):
-  `cd backend && ./mvnw -q generate-resources && osv-scanner scan source -L target/classes/META-INF/sbom/application.cdx.json`
+  `(cd backend && ./mvnw -q generate-resources) && osv-scanner scan source -L backend/target/classes/META-INF/sbom/application.cdx.json -L frontend/package-lock.json`
 - Lint CI workflows (needs `brew install actionlint`): `actionlint`
-- CI (`.github/workflows/ci.yml`) runs the full backend check and the dependency scan on every
-  push to `main` and every pull request. Actions are pinned to commit SHAs; Dependabot updates them.
+- Run frontend: `cd frontend && npm ci && npm start` (http://localhost:4200, `/api` is proxied
+  to the backend on port 8080)
+- Format frontend code: `cd frontend && npm run format`
+- Full frontend check: `cd frontend && npm run check` (ESLint, Prettier check, Vitest unit tests,
+  production build)
+- CI (`.github/workflows/ci.yml`) runs the backend check, the frontend check and the dependency
+  scan on every push to `main` and every pull request. Actions are pinned to commit SHAs; Dependabot updates them.
 
 Not built yet (planned later in M0):
-- Run frontend: `cd frontend && npm ci && npx ng serve`
-- Frontend checks: `cd frontend && npx ng lint && npx ng test`
 - End-to-end tests: `cd frontend && npx playwright test`
 
 ## Secrets and API cost (budget: $40/month of API credits)
