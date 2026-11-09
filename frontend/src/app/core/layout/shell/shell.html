@@ -1,5 +1,23 @@
 <mat-toolbar class="toolbar" role="banner">
   <a class="brand" routerLink="/">AgentShelf</a>
+  <span class="spacer"></span>
+  @if (account(); as a) {
+    <button
+      mat-button
+      class="account"
+      [matMenuTriggerFor]="accountMenu"
+      aria-label="Account menu for {{ a.supplier.name }}"
+    >
+      {{ a.supplier.name }}
+    </button>
+    <mat-menu #accountMenu="matMenu" xPosition="before">
+      <p class="signed-in-as">
+        Signed in as<br />
+        <strong>{{ a.email }}</strong>
+      </p>
+      <button mat-menu-item type="button" (click)="logout()">Log out</button>
+    </mat-menu>
+  }
 </mat-toolbar>
 <main class="content">
   <router-outlet />

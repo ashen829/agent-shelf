@@ -17,8 +17,9 @@ separately with API keys (M4); this ADR covers people using the dashboard.
 - **JSON endpoints** under `/api/v1/auth` (`signup`, `login`, `logout`, `me`) instead of
   form login, so the API is documented in OpenAPI and the client is generated.
 - **CSRF protection** with Spring Security's SPA mode: a readable `XSRF-TOKEN` cookie that
-  Angular's `HttpClient` sends back in the `X-XSRF-TOKEN` header. The token is rotated at
-  sign-in. The frontend and API share one origin (dev proxy now, nginx later), so CORS stays
+  Angular's `HttpClient` sends back in the `X-XSRF-TOKEN` header. A new token is issued at
+  sign-in and at sign-out (the app stays on the page after logout and may post the login
+  form next, so it must never be left without one). The frontend and API share one origin (dev proxy now, nginx later), so CORS stays
   closed.
 - **Session fixation**: the session ID changes at sign-in.
 - **Passwords**: Spring's delegating encoder (bcrypt today; each hash records its algorithm,

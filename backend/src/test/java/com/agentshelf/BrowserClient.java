@@ -21,9 +21,16 @@ public final class BrowserClient {
   private final HttpClient http;
   private boolean sendCsrfHeader = true;
 
-  public BrowserClient(int port) {
+  private BrowserClient(int port) {
     this.baseUrl = "http://localhost:" + port;
     this.http = HttpClient.newBuilder().cookieHandler(cookies).build();
+  }
+
+  /** Opens the app: one "who am I" call, as the Angular app does at start-up. */
+  public static BrowserClient open(int port) {
+    BrowserClient browser = new BrowserClient(port);
+    browser.get("/api/v1/auth/me");
+    return browser;
   }
 
   /** Simulates a cross-site request: the attacker's page can't read our CSRF cookie. */
@@ -42,7 +49,7 @@ public final class BrowserClient {
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(json));
     if (sendCsrfHeader) {
-      csrfToken().ifPresent(token -> request.header("X-XSRF-TOKEN", token));
+      cookie("XSRF-TOKEN").ifPresent(token -> request.header("X-XSRF-TOKEN", token));
     }
     return send(request);
   }
@@ -53,13 +60,6 @@ public final class BrowserClient {
         .map(HttpCookie::getValue)
         .filter(value -> !value.isEmpty())
         .findFirst();
-  }
-
-  private Optional<String> csrfToken() {
-    if (cookie("XSRF-TOKEN").isEmpty()) {
-      get("/api/v1/auth/me");
-    }
-    return cookie("XSRF-TOKEN");
   }
 
   private HttpResponse<String> send(HttpRequest.Builder request) {

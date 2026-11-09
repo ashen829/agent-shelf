@@ -28,7 +28,7 @@ class AuthIT {
 
   @Test
   void signupCreatesSupplierAndOwnerAndSignsIn() {
-    BrowserClient browser = new BrowserClient(port);
+    BrowserClient browser = BrowserClient.open(port);
     String email = uniqueEmail();
 
     HttpResponse<String> signup =
@@ -57,7 +57,7 @@ class AuthIT {
 
   @Test
   void sessionCookieIsHttpOnlyAndCsrfCookieIsReadable() {
-    BrowserClient browser = new BrowserClient(port);
+    BrowserClient browser = BrowserClient.open(port);
     HttpResponse<String> signup =
         browser.post("/api/v1/auth/signup", signupJson(uniqueEmail(), "Cookie Test"));
 
@@ -72,7 +72,7 @@ class AuthIT {
 
   @Test
   void anonymousRequestsGet401AndCreateNoSession() {
-    BrowserClient browser = new BrowserClient(port);
+    BrowserClient browser = BrowserClient.open(port);
     Integer before =
         jdbc.queryForObject("SELECT count(*) FROM identity.spring_session", Integer.class);
 
@@ -89,7 +89,7 @@ class AuthIT {
 
   @Test
   void writesWithoutCsrfTokenAreRejected() {
-    BrowserClient attacker = new BrowserClient(port).withoutCsrfHeader();
+    BrowserClient attacker = BrowserClient.open(port).withoutCsrfHeader();
 
     HttpResponse<String> signup =
         attacker.post("/api/v1/auth/signup", signupJson(uniqueEmail(), "Forged Ltd"));
@@ -101,10 +101,10 @@ class AuthIT {
   @Test
   void duplicateEmailIsConflictIgnoringCase() {
     String email = uniqueEmail();
-    new BrowserClient(port).post("/api/v1/auth/signup", signupJson(email, "First Ltd"));
+    BrowserClient.open(port).post("/api/v1/auth/signup", signupJson(email, "First Ltd"));
 
     HttpResponse<String> second =
-        new BrowserClient(port)
+        BrowserClient.open(port)
             .post(
                 "/api/v1/auth/signup",
                 signupJson(email.toUpperCase(java.util.Locale.ROOT), "Second Ltd"));
@@ -117,7 +117,7 @@ class AuthIT {
   @Test
   void invalidSignupListsFieldErrors() {
     HttpResponse<String> signup =
-        new BrowserClient(port)
+        BrowserClient.open(port)
             .post(
                 "/api/v1/auth/signup",
                 """
@@ -132,12 +132,12 @@ class AuthIT {
   @Test
   void wrongPasswordAndUnknownEmailGiveTheSameGenericError() {
     String email = uniqueEmail();
-    new BrowserClient(port).post("/api/v1/auth/signup", signupJson(email, "Login Test"));
+    BrowserClient.open(port).post("/api/v1/auth/signup", signupJson(email, "Login Test"));
 
     HttpResponse<String> wrongPassword =
-        new BrowserClient(port).post("/api/v1/auth/login", loginJson(email, "wrong password!!"));
+        BrowserClient.open(port).post("/api/v1/auth/login", loginJson(email, "wrong password!!"));
     HttpResponse<String> unknownEmail =
-        new BrowserClient(port).post("/api/v1/auth/login", loginJson(uniqueEmail(), PASSWORD));
+        BrowserClient.open(port).post("/api/v1/auth/login", loginJson(uniqueEmail(), PASSWORD));
 
     assertThat(wrongPassword.statusCode()).isEqualTo(401);
     assertThat(unknownEmail.statusCode()).isEqualTo(401);
@@ -150,10 +150,10 @@ class AuthIT {
   void loginThenLogoutEndsTheSession() {
     String email = uniqueEmail();
     String userId =
-        json(new BrowserClient(port).post("/api/v1/auth/signup", signupJson(email, "Logout Test")))
+        json(BrowserClient.open(port).post("/api/v1/auth/signup", signupJson(email, "Logout Test")))
             .path("userId")
             .asString();
-    BrowserClient browser = new BrowserClient(port);
+    BrowserClient browser = BrowserClient.open(port);
 
     HttpResponse<String> login =
         browser.post(
@@ -169,8 +169,21 @@ class AuthIT {
   }
 
   @Test
+  void logInAgainRightAfterLogout() {
+    String email = uniqueEmail();
+    BrowserClient browser = BrowserClient.open(port);
+    browser.post("/api/v1/auth/signup", signupJson(email, "Relogin Test"));
+
+    assertThat(browser.post("/api/v1/auth/logout", "{}").statusCode()).isEqualTo(204);
+    // The app stays on the page and posts the login form straight away: no GET in between.
+    HttpResponse<String> login = browser.post("/api/v1/auth/login", loginJson(email, PASSWORD));
+
+    assertThat(login.statusCode()).isEqualTo(200);
+  }
+
+  @Test
   void responsesCarrySecurityHeaders() {
-    HttpResponse<String> me = new BrowserClient(port).get("/api/v1/auth/me");
+    HttpResponse<String> me = BrowserClient.open(port).get("/api/v1/auth/me");
 
     assertThat(me.headers().firstValue("Content-Security-Policy"))
         .hasValue("default-src 'none'; frame-ancestors 'none'");
