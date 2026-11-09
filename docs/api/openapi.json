@@ -9,6 +9,9 @@
     "url" : "/"
   } ],
   "tags" : [ {
+    "description" : "CSV price list imports, run in the background",
+    "name" : "Imports"
+  }, {
     "description" : "Supplier sign-up, login and the current account",
     "name" : "Auth"
   }, {
@@ -183,6 +186,412 @@
         },
         "summary" : "Create a supplier account and its owner, and sign in",
         "tags" : [ "Auth" ]
+      }
+    },
+    "/api/v1/imports" : {
+      "get" : {
+        "operationId" : "listImports",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportPage"
+                }
+              }
+            },
+            "description" : "A page of imports"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          }
+        },
+        "summary" : "Import history, newest first",
+        "tags" : [ "Imports" ]
+      },
+      "post" : {
+        "operationId" : "uploadImport",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadResponse"
+                }
+              }
+            },
+            "description" : "Checked and stored; match its columns next"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "413" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "File larger than 10 MB"
+          },
+          "422" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not a usable CSV file (encoding, rows, quotes)"
+          }
+        },
+        "summary" : "Upload a CSV file (UTF-8, at most 10 MB and 20,000 rows)",
+        "tags" : [ "Imports" ]
+      }
+    },
+    "/api/v1/imports/{id}" : {
+      "get" : {
+        "operationId" : "getImport",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportResponse"
+                }
+              }
+            },
+            "description" : "The import"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such import for this supplier"
+          }
+        },
+        "summary" : "Status, progress and results of one import",
+        "tags" : [ "Imports" ]
+      }
+    },
+    "/api/v1/imports/{id}/errors" : {
+      "get" : {
+        "operationId" : "listImportErrors",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50,
+            "maximum" : 200,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportErrorPage"
+                }
+              }
+            },
+            "description" : "A page of row errors"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such import for this supplier"
+          }
+        },
+        "summary" : "Rows that could not be imported",
+        "tags" : [ "Imports" ]
+      }
+    },
+    "/api/v1/imports/{id}/errors.csv" : {
+      "get" : {
+        "operationId" : "downloadImportErrors",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            },
+            "description" : "CSV file"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such import for this supplier"
+          }
+        },
+        "summary" : "The failed rows as CSV, with an Error column, to fix and upload again",
+        "tags" : [ "Imports" ]
+      }
+    },
+    "/api/v1/imports/{id}/preview" : {
+      "get" : {
+        "operationId" : "getImportPreview",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportPreviewResponse"
+                }
+              }
+            },
+            "description" : "The preview"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such import for this supplier"
+          }
+        },
+        "summary" : "Headers, first rows and a suggested column mapping",
+        "tags" : [ "Imports" ]
+      }
+    },
+    "/api/v1/imports/{id}/start" : {
+      "post" : {
+        "operationId" : "startImport",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StartImportRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportResponse"
+                }
+              }
+            },
+            "description" : "Queued"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Invalid request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Another import of this supplier is still running"
+          },
+          "422" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Mapping incomplete, or the import was already started"
+          }
+        },
+        "summary" : "Save the column mapping and run the import in the background",
+        "tags" : [ "Imports" ]
       }
     },
     "/api/v1/products" : {
@@ -555,6 +964,199 @@
         },
         "required" : [ "email", "role", "supplier", "userId" ]
       },
+      "ColumnMappingDto" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "description" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "name" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "price" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "sku" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "stockQty" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "unit" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          }
+        }
+      },
+      "ImportErrorItem" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : [ "string", "null" ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "rowNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "message", "rowNumber" ]
+      },
+      "ImportErrorPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportErrorItem"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "size", "totalItems", "totalPages" ]
+      },
+      "ImportPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "size", "totalItems", "totalPages" ]
+      },
+      "ImportPreviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "headers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "rowCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PreviewRow"
+            }
+          },
+          "suggestedMapping" : {
+            "$ref" : "#/components/schemas/ColumnMappingDto"
+          }
+        },
+        "required" : [ "headers", "rowCount", "rows", "suggestedMapping" ]
+      },
+      "ImportResponse" : {
+        "type" : "object",
+        "properties" : {
+          "completeCatalog" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "failureMessage" : {
+            "type" : [ "string", "null" ]
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "finishedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "productsArchived" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowsCreated" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowsFailed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowsProcessed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowsTotal" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowsUnchanged" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rowsUpdated" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "UPLOADED", "QUEUED", "RUNNING", "COMPLETED", "COMPLETED_WITH_ERRORS", "FAILED" ]
+          }
+        },
+        "required" : [ "completeCatalog", "createdAt", "fileName", "id", "productsArchived", "rowsCreated", "rowsFailed", "rowsProcessed", "rowsTotal", "rowsUnchanged", "rowsUpdated", "status" ]
+      },
       "LoginRequest" : {
         "type" : "object",
         "properties" : {
@@ -585,6 +1187,22 @@
           }
         },
         "required" : [ "amount", "currency" ]
+      },
+      "PreviewRow" : {
+        "type" : "object",
+        "properties" : {
+          "rowNumber" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "required" : [ "rowNumber", "values" ]
       },
       "ProblemDetail" : {
         "type" : "object",
@@ -759,6 +1377,25 @@
         },
         "required" : [ "companyName", "currency", "email", "password" ]
       },
+      "StartImportRequest" : {
+        "type" : "object",
+        "properties" : {
+          "completeCatalog" : {
+            "type" : "boolean",
+            "description" : "Archive active products whose SKU is not in the file"
+          },
+          "decimalSeparator" : {
+            "type" : "string",
+            "enum" : [ ".", "," ],
+            "example" : ".",
+            "pattern" : "[.,]"
+          },
+          "mapping" : {
+            "$ref" : "#/components/schemas/ColumnMappingDto"
+          }
+        },
+        "required" : [ "completeCatalog", "decimalSeparator", "mapping" ]
+      },
       "SupplierResponse" : {
         "type" : "object",
         "properties" : {
@@ -777,6 +1414,18 @@
           }
         },
         "required" : [ "currency", "id", "name", "slug" ]
+      },
+      "UploadResponse" : {
+        "type" : "object",
+        "properties" : {
+          "importJob" : {
+            "$ref" : "#/components/schemas/ImportResponse"
+          },
+          "preview" : {
+            "$ref" : "#/components/schemas/ImportPreviewResponse"
+          }
+        },
+        "required" : [ "importJob", "preview" ]
       }
     }
   }

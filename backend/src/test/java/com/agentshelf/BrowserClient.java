@@ -48,6 +48,46 @@ public final class BrowserClient {
     return write("POST", path, json);
   }
 
+  /** A multipart/form-data upload with one file part named "file", like a browser form. */
+  public HttpResponse<String> upload(String path, String fileName, byte[] content) {
+    String boundary = "----agentshelf-test-" + java.util.UUID.randomUUID();
+    byte[] head =
+        ("--"
+                + boundary
+                + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\""
+                + fileName
+                + "\"\r\nContent-Type: text/csv\r\n\r\n")
+            .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    byte[] tail =
+        ("\r\n--" + boundary + "--\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    byte[] body = new byte[head.length + content.length + tail.length];
+    System.arraycopy(head, 0, body, 0, head.length);
+    System.arraycopy(content, 0, body, head.length, content.length);
+    System.arraycopy(tail, 0, body, head.length + content.length, tail.length);
+    HttpRequest.Builder request =
+        HttpRequest.newBuilder(URI.create(baseUrl + path))
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofByteArray(body));
+    if (sendCsrfHeader) {
+      cookie("XSRF-TOKEN").ifPresent(token -> request.header("X-XSRF-TOKEN", token));
+    }
+    return send(request);
+  }
+
+  /** The raw bytes of a download. */
+  public HttpResponse<byte[]> download(String path) {
+    try {
+      return http.send(
+          HttpRequest.newBuilder(URI.create(baseUrl + path)).GET().build(),
+          HttpResponse.BodyHandlers.ofByteArray());
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e);
+    }
+  }
+
   public HttpResponse<String> put(String path, String json) {
     return write("PUT", path, json);
   }

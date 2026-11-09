@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -61,6 +62,21 @@ public class Product {
       throw new DomainException("A product's currency can't change.");
     }
     apply(details);
+  }
+
+  /** True when saving these details would change nothing. */
+  public boolean hasDetails(ProductDetails details) {
+    return sku.equals(details.sku())
+        && name.equals(details.name())
+        && Objects.equals(description, details.description())
+        && Objects.equals(category, details.category())
+        && Objects.equals(unit, details.unit())
+        && price().equals(details.price())
+        && stockQty == details.stockQty();
+  }
+
+  public boolean isActive() {
+    return status == ProductStatus.ACTIVE;
   }
 
   public void archive() {
