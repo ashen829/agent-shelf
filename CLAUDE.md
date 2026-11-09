@@ -86,6 +86,9 @@ Fill these in during M0 and keep them current.
 - Format backend code: `cd backend && ./mvnw spotless:apply`
 - Full backend check: `cd backend && ./mvnw clean verify` (format, NullAway, module verification,
   unit tests and Testcontainers integration tests)
+- Update the API contract after an intended API change:
+  `cd backend && ./mvnw clean verify -Dopenapi.write=true` (rewrites `docs/api/openapi.json`;
+  `OpenApiContractIT` fails whenever the code and the committed file differ)
 - Dependency vulnerability scan (needs `brew install osv-scanner`):
   `(cd backend && ./mvnw -q generate-resources) && osv-scanner scan source -L backend/target/classes/META-INF/sbom/application.cdx.json -L frontend/package-lock.json`
 - Lint CI workflows (needs `brew install actionlint`): `actionlint`

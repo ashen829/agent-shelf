@@ -80,7 +80,10 @@ catalog/
 - Dashboard login with Spring Security. Use httpOnly, secure session cookies with CSRF
   protection. Never store tokens in localStorage.
 - Sessions are stored in PostgreSQL (Spring Session JDBC) so the app stays stateless.
+  Details in `docs/adr/0002-authentication.md`.
 - Roles: `OWNER` and `STAFF`.
+- The API contract is committed at `docs/api/openapi.json` and checked against the code in
+  every build (`OpenApiContractIT`).
 - Validate every input. Lock CORS to the frontend origin and set security headers.
 - Secrets come only from the environment. Never log secrets, API keys or personal data.
 - CI scans dependencies for known vulnerabilities.
