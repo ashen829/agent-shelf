@@ -12,6 +12,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -19,6 +20,7 @@ import tools.jackson.databind.json.JsonMapper;
 /** Uses the same JSON log format as the prod profile. */
 @SpringBootTest(properties = "logging.structured.format.console=ecs")
 @AutoConfigureMockMvc
+@WithMockUser
 @Import({TestcontainersConfiguration.class, ErrorTestController.class})
 @ExtendWith(OutputCaptureExtension.class)
 class StructuredLoggingIT {

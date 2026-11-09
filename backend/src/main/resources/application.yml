@@ -10,9 +10,26 @@ spring:
   threads:
     virtual:
       enabled: true
+  session:
+    timeout: 8h
+    jdbc:
+      table-name: identity.spring_session
+      initialize-schema: never
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  paths-to-match: /api/**
+  writer-with-order-by-keys: true
 
 server:
   shutdown: graceful
+  servlet:
+    session:
+      cookie:
+        name: AGENTSHELF_SESSION
+        http-only: true
+        same-site: lax
   error:
     include-stacktrace: never
 
@@ -54,6 +71,14 @@ spring:
     url: ${AGENTSHELF_DB_URL}
     username: ${AGENTSHELF_DB_USER}
     password: ${AGENTSHELF_DB_PASSWORD}
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+springdoc:
+  api-docs:
+    enabled: false
 logging:
   structured:
     # JSON logs (Elastic Common Schema). MDC values such as requestId become fields.

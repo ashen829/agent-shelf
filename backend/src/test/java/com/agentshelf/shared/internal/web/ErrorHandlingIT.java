@@ -1,6 +1,7 @@
 package com.agentshelf.shared.internal.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.agentshelf.TestcontainersConfiguration;
 import org.junit.jupiter.api.Test;
@@ -11,11 +12,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser
 @Import({TestcontainersConfiguration.class, ErrorTestController.class})
 class ErrorHandlingIT {
 
@@ -67,6 +70,7 @@ class ErrorHandlingIT {
     MvcTestResult result =
         mvc.post()
             .uri("/test/errors/validate")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"name\": \"\", \"quantity\": 0}")
             .exchange();
@@ -85,6 +89,7 @@ class ErrorHandlingIT {
     MvcTestResult result =
         mvc.post()
             .uri("/test/errors/validate")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content("{not json")
             .exchange();
@@ -93,8 +98,14 @@ class ErrorHandlingIT {
   }
 
   @Test
-  void unknownRouteIsNotFound() {
-    assertProblem(mvc.get().uri("/api/v1/does-not-exist").exchange(), 404);
+  void unknownRouteIsNotFoundWithNeutralMessage() {
+    MvcTestResult result = mvc.get().uri("/api/v1/does-not-exist").exchange();
+
+    assertProblem(result, 404);
+    assertThat(result)
+        .bodyJson()
+        .extractingPath("$.detail")
+        .isEqualTo(GlobalExceptionHandler.NOT_FOUND);
   }
 
   @Test
