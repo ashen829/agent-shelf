@@ -149,6 +149,27 @@ jobs:
             frontend/test-results/
           retention-days: 7
 
+  docker-images:
+    name: Docker images
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Builds only, nothing is pushed: keeps the Dockerfiles and the one-command start working.
+      - name: Build backend image
+        run: docker build --tag agentshelf-backend:ci backend
+
+      - name: Build frontend image
+        run: docker build --tag agentshelf-frontend:ci frontend
+
+      - name: Check the compose file
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        run: docker compose -f infra/docker-compose.yml --profile app config --quiet
+
   dependency-scan:
     name: Dependency vulnerability scan
     runs-on: ubuntu-latest

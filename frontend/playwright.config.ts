@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const CI = !!process.env['CI'];
+/** Test an app that is already running, such as the Docker stack, instead of starting servers. */
+const BASE_URL = process.env['E2E_BASE_URL'];
 
 /**
  * End-to-end tests against the real backend and database. PostgreSQL must be running
@@ -19,7 +21,7 @@ export default defineConfig({
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: BASE_URL ?? 'http://localhost:4200',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -31,20 +33,22 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], channel: process.env['E2E_CHANNEL'] },
     },
   ],
-  webServer: [
-    {
-      command: 'sh e2e/start-backend.sh',
-      url: 'http://localhost:8080/actuator/health/readiness',
-      reuseExistingServer: !CI,
-      timeout: 120_000,
-      stdout: 'ignore',
-      stderr: 'pipe',
-    },
-    {
-      command: 'npm start',
-      url: 'http://localhost:4200',
-      reuseExistingServer: !CI,
-      timeout: 120_000,
-    },
-  ],
+  webServer: BASE_URL
+    ? undefined
+    : [
+        {
+          command: 'sh e2e/start-backend.sh',
+          url: 'http://localhost:8080/actuator/health/readiness',
+          reuseExistingServer: !CI,
+          timeout: 120_000,
+          stdout: 'ignore',
+          stderr: 'pipe',
+        },
+        {
+          command: 'npm start',
+          url: 'http://localhost:4200',
+          reuseExistingServer: !CI,
+          timeout: 120_000,
+        },
+      ],
 });
