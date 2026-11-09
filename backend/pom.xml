@@ -116,6 +116,13 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
 
+      <!-- SBOM of the resolved runtime dependencies (configured by the Boot parent).
+           CI scans it for known vulnerabilities. -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+      </plugin>
+
       <!-- Error Prone + NullAway: null-safety errors fail the build. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

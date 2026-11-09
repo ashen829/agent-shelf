@@ -49,6 +49,7 @@ M0: Foundation. Update this line when a milestone is finished.
 - Unit tests for logic. Testcontainers integration tests for database, REST and MCP code.
   Critical UI flows get a Playwright end-to-end test.
 - The full check passes: build, Spotless format, lint, NullAway, module verification, all tests.
+- CI is green, including the dependency vulnerability scan.
 - Never skip, disable or delete a failing test to get a green build. Fix the cause.
 - OpenAPI spec, docs and the Commands section are updated if anything changed.
 - No commented-out code and no `TODO` without an issue reference.
@@ -84,6 +85,11 @@ Fill these in during M0 and keep them current.
 - Format backend code: `cd backend && ./mvnw spotless:apply`
 - Full backend check: `cd backend && ./mvnw clean verify` (format, NullAway, module verification,
   unit tests and Testcontainers integration tests)
+- Dependency vulnerability scan (needs `brew install osv-scanner`):
+  `cd backend && ./mvnw -q generate-resources && osv-scanner scan source -L target/classes/META-INF/sbom/application.cdx.json`
+- Lint CI workflows (needs `brew install actionlint`): `actionlint`
+- CI (`.github/workflows/ci.yml`) runs the full backend check and the dependency scan on every
+  push to `main` and every pull request. Actions are pinned to commit SHAs; Dependabot updates them.
 
 Not built yet (planned later in M0):
 - Run frontend: `cd frontend && npm ci && npx ng serve`
