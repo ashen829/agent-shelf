@@ -11,7 +11,6 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.stereotype.Component;
@@ -26,12 +25,10 @@ public class SessionManager {
       new ChangeSessionIdAuthenticationStrategy();
   private final SecurityContextRepository contextRepository;
   private final CsrfTokenRepository csrfTokens;
-  private final CsrfAuthenticationStrategy csrfRotation;
 
   SessionManager(SecurityContextRepository contextRepository, CsrfTokenRepository csrfTokens) {
     this.contextRepository = contextRepository;
     this.csrfTokens = csrfTokens;
-    this.csrfRotation = new CsrfAuthenticationStrategy(csrfTokens);
   }
 
   /** Signs the user in: new session ID (no session fixation), new CSRF token, saved context. */
@@ -40,20 +37,26 @@ public class SessionManager {
         UsernamePasswordAuthenticationToken.authenticated(user, null, user.authorities());
     request.getSession(true);
     sessionFixation.onAuthentication(authentication, request, response);
-    csrfRotation.onAuthentication(authentication, request, response);
-    if (request.getAttribute(CsrfToken.class.getName()) instanceof CsrfToken token) {
-      token.getToken();
-    }
+    renewCsrfToken(request, response);
     SecurityContext context = contextHolder.createEmptyContext();
     context.setAuthentication(authentication);
     contextHolder.setContext(context);
     contextRepository.saveContext(context, request, response);
   }
 
-  /** Signs the user out: invalidates the session and clears the CSRF cookie. */
+  /**
+   * Signs the user out: invalidates the session and issues a new CSRF token. The app stays on the
+   * page and may post the login form next, so it must not be left without a token.
+   */
   public void signOut(HttpServletRequest request, HttpServletResponse response) {
     new SecurityContextLogoutHandler()
         .logout(request, response, contextHolder.getContext().getAuthentication());
-    csrfTokens.saveToken(null, request, response);
+    renewCsrfToken(request, response);
+  }
+
+  /** A new token whenever the signed-in user changes, written straight to the cookie. */
+  private void renewCsrfToken(HttpServletRequest request, HttpServletResponse response) {
+    CsrfToken token = csrfTokens.generateToken(request);
+    csrfTokens.saveToken(token, request, response);
   }
 }

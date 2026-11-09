@@ -35,9 +35,9 @@ class TenantIsolationIT {
 
   @BeforeEach
   void twoSuppliers() {
-    browserA = new BrowserClient(port);
+    browserA = BrowserClient.open(port);
     accountA = signup(browserA, "Supplier A");
-    accountB = signup(new BrowserClient(port), "Supplier B");
+    accountB = signup(BrowserClient.open(port), "Supplier B");
   }
 
   @Test

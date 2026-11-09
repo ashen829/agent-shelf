@@ -95,8 +95,10 @@ Fill these in during M0 and keep them current.
 - Run frontend: `cd frontend && npm ci && npm start` (http://localhost:4200, `/api` is proxied
   to the backend on port 8080)
 - Format frontend code: `cd frontend && npm run format`
-- Full frontend check: `cd frontend && npm run check` (ESLint, Prettier check, Vitest unit tests,
-  production build)
+- Regenerate the frontend API client after the contract changes: `cd frontend && npm run api`
+  (reads `docs/api/openapi.json`, writes `src/app/api/generated/`; commit the result)
+- Full frontend check: `cd frontend && npm run check` (generated client up to date, ESLint,
+  Prettier check, Vitest unit tests, production build)
 - CI (`.github/workflows/ci.yml`) runs the backend check, the frontend check and the dependency
   scan on every push to `main` and every pull request. Actions are pinned to commit SHAs; Dependabot updates them.
 

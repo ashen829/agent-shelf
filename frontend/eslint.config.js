@@ -6,6 +6,10 @@ const angular = require('angular-eslint');
 
 module.exports = defineConfig([
   {
+    // Generated from docs/api/openapi.json by `npm run api`. Never edit by hand.
+    ignores: ['src/app/api/generated/**'],
+  },
+  {
     files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,
