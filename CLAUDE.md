@@ -14,7 +14,7 @@ Goal: a production-grade, scalable and maintainable product, built one milestone
 - `docs/adr/`: architecture decision records.
 
 ## Current milestone
-M0: Foundation. Update this line when a milestone is finished.
+M1: Catalog. Update this line when a milestone is finished.
 
 ## Golden rules
 - Enforce every business rule on the server. Never trust values from an AI agent or the browser.
