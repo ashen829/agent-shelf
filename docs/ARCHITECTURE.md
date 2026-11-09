@@ -54,11 +54,13 @@ catalog/
   PostgreSQL row-level security can be added later as extra protection (decide in an ADR).
 
 ## Background jobs
-- Imports and AI cleanup are jobs stored in PostgreSQL.
-- Workers claim jobs with `SELECT ... FOR UPDATE SKIP LOCKED`, which stays safe with many
-  instances running.
+- Imports, AI cleanup and scheduled work (such as quote expiry) run as background jobs with
+  db-scheduler on PostgreSQL. Details in `docs/adr/0003-background-jobs.md`.
+- Instances claim work with `SELECT ... FOR UPDATE SKIP LOCKED` (db-scheduler's lock-and-fetch),
+  which stays safe with many instances running.
+- db-scheduler decides when and where a job runs; each module's own job table (for example
+  `catalog.import_job`) holds the status, counts and errors that suppliers see.
 - Jobs are idempotent and retry with backoff. Failures are recorded and visible in the dashboard.
-- Record the final choice (this approach or a library such as JobRunr) in an ADR during M0.
 
 ## Agent gateway (MCP)
 - MCP server built with Spring AI, Streamable HTTP transport, at `/mcp`.
