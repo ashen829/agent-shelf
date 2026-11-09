@@ -154,6 +154,25 @@
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/*LoggingIT.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <!-- Logback is configured once per JVM, so logging-format tests get their own JVM. -->
+          <execution>
+            <id>logging-it</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*LoggingIT.java</include>
+              </includes>
+              <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-logging.xml</summaryFile>
+            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -16,6 +16,11 @@ server:
   error:
     include-stacktrace: never
 
+logging:
+  pattern:
+    # Readable text logs (local, test): adds [requestId] to every line.
+    correlation: "[%X{requestId:-}] "
+
 management:
   endpoints:
     web:
@@ -49,3 +54,8 @@ spring:
     url: ${AGENTSHELF_DB_URL}
     username: ${AGENTSHELF_DB_USER}
     password: ${AGENTSHELF_DB_PASSWORD}
+logging:
+  structured:
+    # JSON logs (Elastic Common Schema). MDC values such as requestId become fields.
+    format:
+      console: ecs

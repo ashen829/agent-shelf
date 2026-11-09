@@ -82,7 +82,7 @@ Fill these in during M0 and keep them current.
 - Run backend: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local`
   (health: http://localhost:8080/actuator/health)
 - Format backend code: `cd backend && ./mvnw spotless:apply`
-- Full backend check: `cd backend && ./mvnw verify` (format, NullAway, module verification,
+- Full backend check: `cd backend && ./mvnw clean verify` (format, NullAway, module verification,
   unit tests and Testcontainers integration tests)
 
 Not built yet (planned later in M0):
