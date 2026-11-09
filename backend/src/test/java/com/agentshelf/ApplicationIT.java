@@ -40,6 +40,6 @@ class ApplicationIT {
         jdbc.queryForObject(
             "SELECT count(*) FROM information_schema.schemata WHERE schema_name = 'identity'",
             Integer.class);
-    assertThat(count).isEqualTo(1);
+    assertThat(count).isEqualTo(2);
   }
 }
