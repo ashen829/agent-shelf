@@ -1,6 +1,5 @@
 package com.agentshelf.catalog.internal.domain;
 
-import com.agentshelf.shared.DomainException;
 import com.agentshelf.shared.Money;
 import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
@@ -27,21 +26,28 @@ public record ProductDetails(
     description = blankToNull(description);
     category = blankToNull(category);
     unit = blankToNull(unit);
-    require(SKU.matcher(sku).matches(), "SKU must be 1 to 64 letters, digits or . _ / -");
-    require(!name.isEmpty() && name.length() <= 200, "Name must be 1 to 200 characters");
-    require(description == null || description.length() <= 2000, "Description is too long");
-    require(category == null || category.length() <= 100, "Category is too long");
-    require(unit == null || unit.length() <= 30, "Unit is too long");
-    require(stockQty >= 0, "Stock can't be negative");
+    require(SKU.matcher(sku).matches(), "sku", "SKU must be 1 to 64 letters, digits or . _ / -.");
+    require(!name.isEmpty(), "name", "Name is required.");
+    require(name.length() <= 200, "name", "Name must be at most 200 characters.");
+    require(
+        description == null || description.length() <= 2000,
+        "description",
+        "Description must be at most 2000 characters.");
+    require(
+        category == null || category.length() <= 100,
+        "category",
+        "Category must be at most 100 characters.");
+    require(unit == null || unit.length() <= 30, "unit", "Unit must be at most 30 characters.");
+    require(stockQty >= 0, "stockQty", "Stock can't be negative.");
   }
 
   private static @Nullable String blankToNull(@Nullable String value) {
     return value == null || value.isBlank() ? null : value.strip();
   }
 
-  private static void require(boolean condition, String message) {
+  private static void require(boolean condition, String field, String message) {
     if (!condition) {
-      throw new DomainException(message);
+      throw new ProductRuleViolation(field, message);
     }
   }
 }

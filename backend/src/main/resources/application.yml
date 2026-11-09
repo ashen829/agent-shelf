@@ -16,6 +16,21 @@ spring:
       table-name: identity.spring_session
       initialize-schema: never
 
+  servlet:
+    multipart:
+      # CSV imports: at most 10 MB per file (validated again in the import service).
+      max-file-size: 10MB
+      max-request-size: 11MB
+
+# Background jobs (ADR 0003).
+db-scheduler:
+  table-name: jobs.scheduled_tasks
+  polling-strategy: lock_and_fetch
+  # Run a newly scheduled job right away on this instance instead of waiting for the next poll.
+  immediate-execution-enabled: true
+  delay-startup-until-context-ready: true
+  threads: 4
+
 springdoc:
   api-docs:
     path: /v3/api-docs
