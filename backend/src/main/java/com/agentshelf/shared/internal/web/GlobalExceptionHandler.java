@@ -74,7 +74,16 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(ConflictException.class)
   ProblemDetail conflict(ConflictException ex) {
-    return problem(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = problem(HttpStatus.CONFLICT, ex.getMessage());
+    String field = ex.field();
+    if (field != null) {
+      // Same shape as validation errors, so forms show it under the field.
+      problem.setProperty(
+          "errors",
+          List.of(
+              Map.of("field", field, "message", ex.getMessage() == null ? "" : ex.getMessage())));
+    }
+    return problem;
   }
 
   @ExceptionHandler(OptimisticLockingFailureException.class)

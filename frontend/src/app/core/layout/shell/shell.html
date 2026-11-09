@@ -3,7 +3,7 @@
     <button
       mat-icon-button
       type="button"
-      aria-label="Open navigation"
+      aria-label="Menu"
       [attr.aria-expanded]="nav.opened"
       (click)="nav.toggle()"
     >
@@ -51,6 +51,17 @@
         (click)="compact() && nav.close()"
       >
         Dashboard
+      </a>
+      <a
+        mat-list-item
+        routerLink="/catalog"
+        routerLinkActive
+        #catalogLink="routerLinkActive"
+        [activated]="catalogLink.isActive"
+        [attr.aria-current]="catalogLink.isActive ? 'page' : null"
+        (click)="compact() && nav.close()"
+      >
+        Catalog
       </a>
     </mat-nav-list>
     <section aria-labelledby="coming-soon">

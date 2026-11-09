@@ -50,6 +50,9 @@ catalog/
 - No cross-module joins and no foreign keys across modules. Reference by ID.
 - UUID primary keys (time-ordered). Every table has `created_at`, `updated_at` and `version`.
 - Flyway migrations. Never edit a migration that has already run.
+- Text that users sort by (names, SKUs) uses the ICU collation `und-x-icu`, so lists sort the way
+  people read them ("anchor" < "Brick"). The database default sorts by raw character codes.
+- Money is `NUMERIC` plus a currency code, sent to clients as decimal text (never a float).
 - Tenant isolation: `supplier_id` on every tenant table, enforced in every repository query.
   PostgreSQL row-level security can be added later as extra protection (decide in an ADR).
 

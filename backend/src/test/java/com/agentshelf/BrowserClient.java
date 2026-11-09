@@ -9,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A test client that behaves like the Angular app in a browser: keeps cookies between requests and
@@ -44,10 +45,28 @@ public final class BrowserClient {
   }
 
   public HttpResponse<String> post(String path, String json) {
+    return write("POST", path, json);
+  }
+
+  public HttpResponse<String> put(String path, String json) {
+    return write("PUT", path, json);
+  }
+
+  public HttpResponse<String> delete(String path) {
+    return write("DELETE", path, null);
+  }
+
+  private HttpResponse<String> write(String method, String path, @Nullable String json) {
     HttpRequest.Builder request =
         HttpRequest.newBuilder(URI.create(baseUrl + path))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(json));
+            .method(
+                method,
+                json == null
+                    ? HttpRequest.BodyPublishers.noBody()
+                    : HttpRequest.BodyPublishers.ofString(json));
+    if (json != null) {
+      request.header("Content-Type", "application/json");
+    }
     if (sendCsrfHeader) {
       cookie("XSRF-TOKEN").ifPresent(token -> request.header("X-XSRF-TOKEN", token));
     }

@@ -1,0 +1,96 @@
+<a mat-button routerLink="/catalog" class="back">← Catalog</a>
+<h1>{{ editing() ? 'Edit product' : 'Add product' }}</h1>
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" aria-label="Loading product" />
+}
+
+@if (stale()) {
+  <div class="alert" role="alert">
+    <p>Someone else changed this product after you opened it. Your changes were not saved.</p>
+    <button mat-stroked-button type="button" (click)="reload()">Load the latest version</button>
+  </div>
+}
+@if (error(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+}
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="row">
+    <mat-form-field>
+      <mat-label>SKU</mat-label>
+      <input matInput formControlName="sku" autocomplete="off" />
+      <mat-hint>Your product code, for example PVC-20</mat-hint>
+      @if (form.controls.sku.hasError('server')) {
+        <mat-error>{{ form.controls.sku.getError('server') }}</mat-error>
+      } @else if (form.controls.sku.hasError('required')) {
+        <mat-error>Enter a SKU.</mat-error>
+      } @else if (form.controls.sku.hasError('pattern')) {
+        <mat-error>Use up to 64 letters, digits or . _ / - (no spaces).</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="grow">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" autocomplete="off" />
+      @if (form.controls.name.hasError('server')) {
+        <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
+      } @else if (form.controls.name.hasError('required')) {
+        <mat-error>Enter a name.</mat-error>
+      } @else if (form.controls.name.hasError('maxlength')) {
+        <mat-error>Use at most 200 characters.</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <mat-form-field>
+    <mat-label>Description</mat-label>
+    <textarea matInput formControlName="description" rows="3"></textarea>
+    @if (form.controls.description.hasError('maxlength')) {
+      <mat-error>Use at most 2000 characters.</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="row">
+    <mat-form-field class="grow">
+      <mat-label>Category</mat-label>
+      <input matInput formControlName="category" autocomplete="off" />
+      <mat-hint>Optional, for example Pipes</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Unit</mat-label>
+      <input matInput formControlName="unit" autocomplete="off" />
+      <mat-hint>Optional, for example m, kg, box</mat-hint>
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-form-field>
+      <mat-label>Price</mat-label>
+      <input matInput formControlName="price" inputmode="decimal" autocomplete="off" />
+      <span matTextSuffix>{{ currency() }}</span>
+      <mat-hint>Up to 4 decimals, for example 0.0125</mat-hint>
+      @if (form.controls.price.hasError('server')) {
+        <mat-error>{{ form.controls.price.getError('server') }}</mat-error>
+      } @else if (form.controls.price.hasError('required')) {
+        <mat-error>Enter a price.</mat-error>
+      } @else if (form.controls.price.hasError('pattern')) {
+        <mat-error>Use a number like 12.50, with at most 4 decimals.</mat-error>
+      }
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Stock</mat-label>
+      <input matInput type="number" min="0" step="1" formControlName="stockQty" />
+      @if (form.controls.stockQty.invalid) {
+        <mat-error>Enter a whole number, 0 or more.</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <div class="actions">
+    <button mat-flat-button type="submit" [disabled]="saving() || loading()">
+      {{ saving() ? 'Saving…' : editing() ? 'Save changes' : 'Add product' }}
+    </button>
+    <a mat-button routerLink="/catalog">Cancel</a>
+  </div>
+</form>

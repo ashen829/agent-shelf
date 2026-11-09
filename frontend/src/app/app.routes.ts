@@ -25,6 +25,24 @@ export const routes: Routes = [
         title: 'Dashboard · AgentShelf',
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
+      {
+        path: 'catalog',
+        title: 'Catalog · AgentShelf',
+        loadComponent: () =>
+          import('./features/catalog/product-list/product-list').then((m) => m.ProductList),
+      },
+      {
+        path: 'catalog/new',
+        title: 'Add product · AgentShelf',
+        loadComponent: () =>
+          import('./features/catalog/product-form/product-form').then((m) => m.ProductForm),
+      },
+      {
+        path: 'catalog/:id',
+        title: 'Edit product · AgentShelf',
+        loadComponent: () =>
+          import('./features/catalog/product-form/product-form').then((m) => m.ProductForm),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
