@@ -1,5 +1,9 @@
 name: agentshelf
 
+# Development: `docker compose -f infra/docker-compose.yml up -d --wait` starts only PostgreSQL;
+# run the backend and frontend with hot reload (see CLAUDE.md).
+# Everything in containers: add `--profile app` (see "Commands" in CLAUDE.md).
+
 services:
   postgres:
     image: postgres:18.6-alpine
@@ -16,6 +20,30 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  backend:
+    profiles: [app]
+    build: ../backend
+    environment:
+      # The production profile, with the database inside this network.
+      SPRING_PROFILES_ACTIVE: prod
+      AGENTSHELF_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-agentshelf}
+      AGENTSHELF_DB_USER: ${POSTGRES_USER:-agentshelf}
+      AGENTSHELF_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      # Plain http on localhost only. Real deployments keep Secure cookies behind TLS.
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    profiles: [app]
+    build: ../frontend
+    ports:
+      - "${APP_PORT:-8088}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres-data:

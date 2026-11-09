@@ -80,6 +80,12 @@ Fill these in during M0 and keep them current.
 - Requirements: JDK 25 (`JAVA_HOME` must point to it), Docker running,
   Node 22.22.3+ or 24.15+ (version pinned in `frontend/.nvmrc`).
 - First-time setup: `cp infra/.env.example infra/.env` and set `POSTGRES_PASSWORD`.
+- **Start everything with one command** (database, backend and frontend in containers, built
+  from source; only Docker is needed):
+  `docker compose -f infra/docker-compose.yml --profile app up --build -d --wait`, then open
+  http://localhost:8088. Stop with `docker compose -f infra/docker-compose.yml --profile app down`.
+- Development with hot reload instead: start only the database, then run the backend and the
+  frontend as below.
 - Start infrastructure: `docker compose -f infra/docker-compose.yml up -d --wait`
 - Run backend: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local`
   (health: http://localhost:8080/actuator/health)
@@ -106,7 +112,8 @@ Fill these in during M0 and keep them current.
   jar once (`cd backend && ./mvnw -DskipTests package`), then `cd frontend && npm run e2e`.
   Playwright starts the backend and the dev server, or reuses running ones. First time only:
   `cd frontend && npx playwright install chromium`, or run with `E2E_CHANNEL=chrome` to use the
-  installed Google Chrome instead.
+  installed Google Chrome instead. Against the Docker stack:
+  `cd frontend && E2E_BASE_URL=http://localhost:8088 npm run e2e`.
 
 ## Secrets and API cost (budget: $40/month of API credits)
 - The app reads the Claude key from `AGENTSHELF_CLAUDE_KEY`.

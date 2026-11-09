@@ -37,6 +37,10 @@ logging:
   pattern:
     # Readable text logs (local, test): adds [requestId] to every line.
     correlation: "[%X{requestId:-}] "
+  level:
+    # Tomcat logs the full content of cookies it can't parse. Browsers send other apps' cookies
+    # too, which can hold tokens or personal data, so keep this logger quiet.
+    org.apache.tomcat.util.http.parser.Cookie: warn
 
 management:
   endpoints:
