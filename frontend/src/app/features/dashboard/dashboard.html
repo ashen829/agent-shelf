@@ -22,7 +22,9 @@
                 </p>
                 <p class="detail">{{ step.detail }}</p>
               </div>
-              @if (step.milestone) {
+              @if (step.link) {
+                <a class="step-link" [routerLink]="step.link.path">{{ step.link.label }}</a>
+              } @else if (step.milestone) {
                 <span class="soon">Coming in {{ step.milestone }}</span>
               }
             </li>

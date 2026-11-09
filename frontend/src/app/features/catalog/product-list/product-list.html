@@ -1,6 +1,10 @@
 <header class="header">
   <h1>Catalog</h1>
-  <a mat-flat-button routerLink="/catalog/new">Add product</a>
+  <div class="header-actions">
+    <a mat-button routerLink="/catalog/imports">Imports</a>
+    <a mat-stroked-button routerLink="/catalog/import">Import CSV</a>
+    <a mat-flat-button routerLink="/catalog/new">Add product</a>
+  </div>
 </header>
 
 <mat-button-toggle-group
@@ -25,8 +29,11 @@
     <section class="empty">
       @if (status() === 'ACTIVE') {
         <h2>No products yet</h2>
-        <p>Add your first product. Importing a whole price list from a CSV file comes next.</p>
-        <a mat-stroked-button routerLink="/catalog/new">Add product</a>
+        <p>Import your price list from a CSV file, or add products one by one.</p>
+        <div class="empty-actions">
+          <a mat-flat-button routerLink="/catalog/import">Import CSV</a>
+          <a mat-stroked-button routerLink="/catalog/new">Add product</a>
+        </div>
       } @else {
         <h2>No archived products</h2>
         <p>Products you archive are kept here, and you can restore them at any time.</p>

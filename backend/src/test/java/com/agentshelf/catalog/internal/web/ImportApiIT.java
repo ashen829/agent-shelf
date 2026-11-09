@@ -68,6 +68,21 @@ class ImportApiIT {
   }
 
   @Test
+  void startsRightAwayInsteadOfWaitingForTheNextPoll() {
+    for (int attempt = 0; attempt < 3; attempt++) {
+      String id =
+          id(upload("quick-" + attempt + ".csv", "sku,name,price\nQ-" + attempt + ",Quick,1\n"));
+      Instant clicked = Instant.now();
+
+      JsonNode done = startAndWait(id, mapping(0, 1, 2), ".", false);
+
+      // The scheduler polls every 10 s; a fresh import must not wait for that.
+      assertThat(Duration.between(clicked, Instant.parse(done.path("startedAt").asString())))
+          .isLessThan(Duration.ofSeconds(3));
+    }
+  }
+
+  @Test
   void importsValidRowsAndReportsTheRestAsADownloadableFile() {
     String csv =
         """
