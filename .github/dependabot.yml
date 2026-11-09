@@ -29,3 +29,16 @@ updates:
       interval: weekly
     commit-message:
       prefix: "build(deps)"
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build(deps)"
+    groups:
+      # Angular packages must move together; `ng update` migrations may be needed for majors.
+      angular:
+        patterns: ["@angular/*", "@angular-devkit/*", "angular-eslint", "typescript"]
+      npm-minor-patch:
+        update-types: [minor, patch]

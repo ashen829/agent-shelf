@@ -47,6 +47,35 @@ jobs:
             backend/target/failsafe-reports/
           retention-days: 7
 
+  frontend:
+    name: Frontend check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Same npm major as local development, so `allowScripts` (blocked install scripts) applies.
+      - name: Install npm from packageManager
+        run: npm install -g "$(node -p "require('./package.json').packageManager")"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # ESLint, Prettier check, Vitest unit tests, production build.
+      - name: Check
+        run: npm run check
+
   dependency-scan:
     name: Dependency vulnerability scan
     runs-on: ubuntu-latest
@@ -68,8 +97,9 @@ jobs:
         working-directory: backend
         run: ./mvnw -B -ntp generate-resources
 
-      - name: Scan SBOM with OSV-Scanner
+      - name: Scan with OSV-Scanner
         uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36 # v2.7.0
         with:
           scan-args: |-
             --lockfile=backend/target/classes/META-INF/sbom/application.cdx.json
+            --lockfile=frontend/package-lock.json

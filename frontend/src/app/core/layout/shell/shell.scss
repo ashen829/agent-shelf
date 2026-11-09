@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.toolbar {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+}
+
+.brand {
+  color: inherit;
+  font: var(--mat-sys-title-large);
+  text-decoration: none;
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+}
