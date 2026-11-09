@@ -14,6 +14,13 @@
       container-text-color: var(--mat-sys-on-primary),
     )
   );
+  // Icon buttons (the phone menu button) use their own colour token, not the toolbar's.
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--mat-sys-on-primary),
+      state-layer-color: var(--mat-sys-on-primary),
+    )
+  );
   position: relative;
   z-index: 2;
 }

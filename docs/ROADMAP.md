@@ -8,6 +8,8 @@
 - Ideas that come up mid-milestone go to "Later" below, not into the current milestone.
 
 ## M0: Foundation (walking skeleton)
+Status: done, 2026-11-09, tagged `v0.1.0`.
+
 Scope:
 - Repo structure, Maven backend with Spring Boot and Spring Modulith, Angular app shell
 - `infra/docker-compose.yml` with PostgreSQL. Flyway baseline migration.
@@ -82,6 +84,13 @@ Done when:
 - The app runs in production.
 - Search handles 50 requests per second with p95 latency under 300 ms.
 - The demo video is recorded.
+
+## Follow-ups from M0 (planned, not forgotten)
+- Throttle failed dashboard logins: issue #8 (before launch, uses the M4 rate limiter).
+- Email verification, so sign-up stops revealing registered emails (with email sending, M5).
+- Self-host the Roboto and Material Symbols fonts, then drop Google Fonts from the CSP
+  (ADR 0004, before launch).
+- OpenTelemetry tracing (request IDs and JSON logs are in place; add tracing with deployment, M6).
 
 ## Later (not now)
 ERP connectors (Odoo, SAP), ACP and UCP adapters, payments (AP2), semantic search,
