@@ -34,9 +34,9 @@ class OpenApiConfig {
   }
 
   /**
-   * Our DTOs are {@code @NullMarked}: every field is non-null unless it says {@code @Nullable}.
-   * Mark all their properties as required so the generated TypeScript types are not optional. A DTO
-   * that gains a nullable field must list it here, and the contract test will show the change.
+   * Our DTOs are {@code @NullMarked}: every field is non-null unless it says {@code @Nullable}
+   * (shown in the spec with {@code @Schema(nullable = true)}). Non-null properties are marked
+   * required, so the generated TypeScript types are strict; nullable ones stay optional.
    */
   @Bean
   OpenApiCustomizer requiredByDefault() {
@@ -47,11 +47,20 @@ class OpenApiConfig {
       for (Map.Entry<String, Schema> entry : openApi.getComponents().getSchemas().entrySet()) {
         Map<String, Schema> properties = entry.getValue().getProperties();
         if (!OPTIONAL_FIELD_SCHEMAS.contains(entry.getKey()) && properties != null) {
-          entry
-              .getValue()
-              .setRequired(new ArrayList<>(properties.keySet().stream().sorted().toList()));
+          List<String> required =
+              properties.entrySet().stream()
+                  .filter(property -> !isNullable(property.getValue()))
+                  .map(Map.Entry::getKey)
+                  .sorted()
+                  .toList();
+          entry.getValue().setRequired(required.isEmpty() ? null : new ArrayList<>(required));
         }
       }
     };
+  }
+
+  private static boolean isNullable(Schema<?> property) {
+    return Boolean.TRUE.equals(property.getNullable())
+        || (property.getTypes() != null && property.getTypes().contains("null"));
   }
 }

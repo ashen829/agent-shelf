@@ -1,9 +1,10 @@
 @use '@angular/material' as mat;
 
+// The page itself scrolls (not an inner box), so keyboards and screen readers can always scroll it.
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
 }
 
 .toolbar {
@@ -21,7 +22,8 @@
       state-layer-color: var(--mat-sys-on-primary),
     )
   );
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 2;
 }
 

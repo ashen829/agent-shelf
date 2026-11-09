@@ -11,6 +11,9 @@
   "tags" : [ {
     "description" : "Supplier sign-up, login and the current account",
     "name" : "Auth"
+  }, {
+    "description" : "The signed-in supplier's catalog",
+    "name" : "Products"
   } ],
   "paths" : {
     "/api/v1/auth/login" : {
@@ -181,6 +184,353 @@
         "summary" : "Create a supplier account and its owner, and sign in",
         "tags" : [ "Auth" ]
       }
+    },
+    "/api/v1/products" : {
+      "get" : {
+        "operationId" : "listProducts",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "ACTIVE",
+            "enum" : [ "ACTIVE", "ARCHIVED" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        }, {
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "NAME",
+            "enum" : [ "NAME", "NAME_DESC", "SKU", "UPDATED_DESC" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductPage"
+                }
+              }
+            },
+            "description" : "A page of products"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Invalid page, size or sort"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          }
+        },
+        "summary" : "One page of products",
+        "tags" : [ "Products" ]
+      },
+      "post" : {
+        "operationId" : "createProduct",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProductRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductResponse"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Invalid fields"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "SKU already used by another product"
+          }
+        },
+        "summary" : "Add a product",
+        "tags" : [ "Products" ]
+      }
+    },
+    "/api/v1/products/{id}" : {
+      "delete" : {
+        "operationId" : "archiveProduct",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Archived"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such product for this supplier"
+          }
+        },
+        "summary" : "Archive a product (hidden from lists and agents, history kept)",
+        "tags" : [ "Products" ]
+      },
+      "get" : {
+        "operationId" : "getProduct",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductResponse"
+                }
+              }
+            },
+            "description" : "The product"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such product for this supplier"
+          }
+        },
+        "summary" : "One product",
+        "tags" : [ "Products" ]
+      },
+      "put" : {
+        "operationId" : "updateProduct",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProductRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductResponse"
+                }
+              }
+            },
+            "description" : "Saved"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Invalid fields"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such product for this supplier"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "SKU already used, or someone else saved this product first"
+          }
+        },
+        "summary" : "Edit a product",
+        "tags" : [ "Products" ]
+      }
+    },
+    "/api/v1/products/{id}/restore" : {
+      "post" : {
+        "operationId" : "restoreProduct",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductResponse"
+                }
+              }
+            },
+            "description" : "Restored"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such product for this supplier"
+          }
+        },
+        "summary" : "Make an archived product active again",
+        "tags" : [ "Products" ]
+      }
     }
   },
   "components" : {
@@ -221,6 +571,21 @@
         },
         "required" : [ "email", "password" ]
       },
+      "MoneyResponse" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string",
+            "description" : "Decimal, 4 places",
+            "example" : "12.5000"
+          },
+          "currency" : {
+            "type" : "string",
+            "example" : "USD"
+          }
+        },
+        "required" : [ "amount", "currency" ]
+      },
       "ProblemDetail" : {
         "type" : "object",
         "properties" : {
@@ -247,6 +612,126 @@
             "format" : "uri"
           }
         }
+      },
+      "ProductPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProductResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "size", "totalItems", "totalPages" ]
+      },
+      "ProductRequest" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "description" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "name" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "price" : {
+            "type" : "string",
+            "example" : "12.50",
+            "minLength" : 1,
+            "pattern" : "\\d{1,13}(\\.\\d{1,4})?"
+          },
+          "sku" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[A-Za-z0-9][A-Za-z0-9._/-]{0,63}"
+          },
+          "stockQty" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 2000000000,
+            "minimum" : 0
+          },
+          "unit" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64",
+            "description" : "Required when editing: the version you loaded, to detect lost updates"
+          }
+        },
+        "required" : [ "name", "price", "sku", "stockQty" ]
+      },
+      "ProductResponse" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "type" : [ "string", "null" ]
+          },
+          "description" : {
+            "type" : [ "string", "null" ]
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "price" : {
+            "$ref" : "#/components/schemas/MoneyResponse"
+          },
+          "sku" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "ARCHIVED" ]
+          },
+          "stockQty" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "unit" : {
+            "type" : [ "string", "null" ]
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "id", "name", "price", "sku", "status", "stockQty", "updatedAt", "version" ]
       },
       "SignupRequest" : {
         "type" : "object",

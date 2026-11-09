@@ -9,7 +9,7 @@ test.describe('on a phone', () => {
     const nav = page.getByRole('navigation', { name: 'Main' });
     await expect(nav).toBeHidden();
 
-    await page.getByRole('button', { name: 'Open navigation' }).click();
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
 
     await expect(nav).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Coming soon' })).toBeVisible();

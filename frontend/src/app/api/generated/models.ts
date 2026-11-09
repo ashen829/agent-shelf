@@ -3,6 +3,10 @@
 
 export type { AccountResponse } from './models/account-response';
 export type { LoginRequest } from './models/login-request';
+export type { MoneyResponse } from './models/money-response';
 export type { ProblemDetail } from './models/problem-detail';
+export type { ProductPage } from './models/product-page';
+export type { ProductRequest } from './models/product-request';
+export type { ProductResponse } from './models/product-response';
 export type { SignupRequest } from './models/signup-request';
 export type { SupplierResponse } from './models/supplier-response';

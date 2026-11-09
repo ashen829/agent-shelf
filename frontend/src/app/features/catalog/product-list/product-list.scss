@@ -1,0 +1,71 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  h1 {
+    font: var(--mat-sys-headline-small);
+    margin: 0;
+  }
+}
+
+.status {
+  margin-bottom: 16px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+}
+
+.number {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.unit {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.alert {
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.empty {
+  padding: 32px 24px;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  text-align: center;
+
+  h2 {
+    font: var(--mat-sys-title-medium);
+    margin: 0 0 8px;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0 0 16px;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
