@@ -1,0 +1,82 @@
+<section aria-labelledby="match-columns">
+  <h2 id="match-columns">Match the columns</h2>
+  <p class="intro">
+    {{ job().fileName }} has {{ job().rowsTotal }} product rows. For each field, choose the column
+    that holds it. SKU, name and price are required.
+  </p>
+
+  @if (error(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <form [formGroup]="mapping" (ngSubmit)="start()" novalidate>
+    <div class="fields">
+      @for (field of fields; track field.key) {
+        <mat-form-field>
+          <mat-label>{{ field.label }}{{ field.required ? '' : ' (optional)' }}</mat-label>
+          <mat-select [formControlName]="field.key">
+            <mat-option [value]="null">{{
+              field.required ? '— Choose a column —' : 'Not in this file'
+            }}</mat-option>
+            @for (column of columns(); track column.index) {
+              <mat-option [value]="column.index">{{ column.header }}</mat-option>
+            }
+          </mat-select>
+          @if (example(mapping.controls[field.key].value); as value) {
+            <mat-hint>For example: {{ value }}</mat-hint>
+          }
+          @if (mapping.controls[field.key].hasError('required')) {
+            <mat-error>Choose the column for {{ field.label.toLowerCase() }}.</mat-error>
+          }
+        </mat-form-field>
+      }
+    </div>
+    @if (mapping.hasError('duplicateColumn') && mapping.touched) {
+      <p class="alert" role="alert">Each column can only be used for one field.</p>
+    }
+
+    <fieldset class="option">
+      <legend>Prices and numbers in this file use</legend>
+      <mat-radio-group [formControl]="decimalSeparator" aria-label="Decimal separator">
+        <mat-radio-button value=".">a decimal point (12.50)</mat-radio-button>
+        <mat-radio-button value=",">a decimal comma (12,50)</mat-radio-button>
+      </mat-radio-group>
+    </fieldset>
+
+    <mat-checkbox [formControl]="completeCatalog">
+      This file is my complete catalog: archive active products that are not in it
+    </mat-checkbox>
+
+    <div class="actions">
+      <button mat-flat-button type="submit" [disabled]="starting()">
+        {{ starting() ? 'Starting…' : 'Import ' + job().rowsTotal + ' rows' }}
+      </button>
+    </div>
+  </form>
+</section>
+
+<section aria-labelledby="preview-heading" class="preview">
+  <h2 id="preview-heading">First rows of the file</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Row</th>
+          @for (header of preview().headers; track $index) {
+            <th scope="col">{{ header }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of preview().rows; track row.rowNumber) {
+          <tr>
+            <th scope="row">{{ row.rowNumber }}</th>
+            @for (value of row.values; track $index) {
+              <td>{{ value }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

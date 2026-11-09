@@ -10,7 +10,7 @@ import com.agentshelf.identity.CurrentUser;
 import com.agentshelf.shared.ConflictException;
 import com.agentshelf.shared.DomainException;
 import com.agentshelf.shared.NotFoundException;
-import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.Scheduler;
 import com.github.kagkarlsson.scheduler.task.helper.OneTimeTask;
 import java.time.Instant;
 import java.util.List;
@@ -20,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /** CSV import use cases for the signed-in supplier. The import itself runs in ImportRunner. */
 @Service
@@ -33,14 +35,14 @@ public class ImportService {
   private final ImportJobRepository jobs;
   private final ImportErrorRepository errors;
   private final ImportFileStore files;
-  private final SchedulerClient scheduler;
+  private final Scheduler scheduler;
   private final OneTimeTask<String> csvImportTask;
 
   ImportService(
       ImportJobRepository jobs,
       ImportErrorRepository errors,
       ImportFileStore files,
-      SchedulerClient scheduler,
+      Scheduler scheduler,
       OneTimeTask<String> csvImportTask) {
     this.jobs = jobs;
     this.errors = errors;
@@ -112,6 +114,15 @@ public class ImportService {
     // Same transaction: if this fails, the job stays UPLOADED.
     scheduler.scheduleIfNotExists(
         csvImportTask.instance(job.id().toString(), job.id().toString()), Instant.now());
+    // The scheduler can only see the new task after commit. Without this nudge it would wait
+    // for its next poll (up to 10 s) before starting the import.
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            scheduler.triggerCheckForDueExecutions();
+          }
+        });
     return job;
   }
 

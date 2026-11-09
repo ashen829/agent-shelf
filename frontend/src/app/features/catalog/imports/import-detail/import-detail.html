@@ -1,0 +1,119 @@
+<a mat-button routerLink="/catalog/imports" class="back">← Imports</a>
+
+@if (error(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+}
+
+@if (job(); as j) {
+  <h1>{{ j.fileName }}</h1>
+  <p class="status" role="status">{{ labels[j.status] }}</p>
+
+  @if (j.status === 'UPLOADED') {
+    @if (preview(); as p) {
+      <app-import-mapping [job]="j" [preview]="p" (started)="onStarted($event)" />
+    }
+  } @else if (isRunning(j.status)) {
+    <section class="progress" aria-labelledby="progress-heading">
+      <h2 id="progress-heading">Importing {{ j.rowsTotal }} rows</h2>
+      <mat-progress-bar
+        mode="determinate"
+        [value]="percent(j)"
+        [attr.aria-label]="'Import progress ' + percent(j) + '%'"
+      />
+      <p>
+        {{ j.rowsProcessed }} of {{ j.rowsTotal }} rows done. You can leave this page; the import
+        keeps running.
+      </p>
+    </section>
+  } @else if (isFinished(j.status)) {
+    <section aria-labelledby="result-heading">
+      <h2 id="result-heading" class="visually-hidden">Result</h2>
+      @if (j.status === 'FAILED') {
+        <p class="alert" role="alert">{{ j.failureMessage }}</p>
+      } @else {
+        <dl class="counts">
+          <div>
+            <dt>Added</dt>
+            <dd>{{ j.rowsCreated }}</dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd>{{ j.rowsUpdated }}</dd>
+          </div>
+          <div>
+            <dt>Unchanged</dt>
+            <dd>{{ j.rowsUnchanged }}</dd>
+          </div>
+          <div [class.bad]="j.rowsFailed > 0">
+            <dt>Rows with errors</dt>
+            <dd>{{ j.rowsFailed }}</dd>
+          </div>
+          @if (j.completeCatalog) {
+            <div>
+              <dt>Archived (not in the file)</dt>
+              <dd>{{ j.productsArchived }}</dd>
+            </div>
+          }
+        </dl>
+      }
+
+      <div class="actions">
+        <a mat-flat-button routerLink="/catalog">Go to catalog</a>
+        <a mat-stroked-button routerLink="/catalog/import">Upload another file</a>
+      </div>
+    </section>
+
+    @if (j.rowsFailed > 0) {
+      <section class="errors" aria-labelledby="errors-heading">
+        <h2 id="errors-heading">Rows to fix</h2>
+        <p>
+          Download these rows, fix them in your spreadsheet, and upload the file again. The other
+          rows are already imported.
+        </p>
+        <a
+          mat-stroked-button
+          [href]="'/api/v1/imports/' + j.id + '/errors.csv'"
+          download="rows-with-errors.csv"
+          >Download rows with errors (CSV)</a
+        >
+        @if (errors(); as page) {
+          <div class="table-wrap">
+            <table>
+              <caption class="visually-hidden">
+                Rows that could not be imported
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Row</th>
+                  <th scope="col">Field</th>
+                  <th scope="col">Problem</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of page.items; track e.rowNumber + (e.field ?? '')) {
+                  <tr>
+                    <td>{{ e.rowNumber }}</td>
+                    <td>{{ fieldLabel(e.field) }}</td>
+                    <td>{{ e.message }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (page.totalItems > page.size) {
+            <mat-paginator
+              [length]="page.totalItems"
+              [pageIndex]="page.page"
+              [pageSize]="page.size"
+              [pageSizeOptions]="[50, 100, 200]"
+              (page)="changeErrorPage($event)"
+              aria-label="Error pages"
+            />
+          }
+        }
+      </section>
+    }
+  }
+} @else if (!error()) {
+  <mat-progress-bar mode="indeterminate" aria-label="Loading the import" />
+}

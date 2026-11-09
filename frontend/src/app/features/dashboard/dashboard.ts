@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { RouterLink } from '@angular/router';
 import { AuthStore } from '../../core/auth/auth-store';
 
 interface Step {
@@ -7,12 +8,14 @@ interface Step {
   detail: string;
   done: boolean;
   milestone?: string;
+  /** Where to do this step, once it is available. */
+  link?: { path: string; label: string };
 }
 
 /** The supplier's start page. Empty for now: it fills up as later milestones land. */
 @Component({
   selector: 'app-dashboard',
-  imports: [MatCardModule],
+  imports: [MatCardModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -27,9 +30,9 @@ export class Dashboard {
     { title: 'Create your account', detail: 'Your supplier account is ready.', done: true },
     {
       title: 'Import your price list',
-      detail: 'Upload a CSV or Excel file and fix any rows with errors.',
+      detail: 'Upload a CSV file, match its columns and fix any rows with errors.',
       done: false,
-      milestone: 'M1',
+      link: { path: '/catalog/import', label: 'Import CSV' },
     },
     {
       title: 'Review AI suggestions',

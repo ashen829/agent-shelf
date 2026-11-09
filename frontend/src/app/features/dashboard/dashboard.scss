@@ -99,3 +99,9 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.step-link {
+  flex: none;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-primary);
+}

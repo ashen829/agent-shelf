@@ -37,6 +37,31 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/catalog/product-form/product-form').then((m) => m.ProductForm),
       },
+      // Before 'catalog/:id', so "import" and "imports" are not read as product IDs.
+      {
+        path: 'catalog/import',
+        title: 'Import a price list · AgentShelf',
+        loadComponent: () =>
+          import('./features/catalog/imports/import-upload/import-upload').then(
+            (m) => m.ImportUpload,
+          ),
+      },
+      {
+        path: 'catalog/imports',
+        title: 'Imports · AgentShelf',
+        loadComponent: () =>
+          import('./features/catalog/imports/import-history/import-history').then(
+            (m) => m.ImportHistory,
+          ),
+      },
+      {
+        path: 'catalog/imports/:id',
+        title: 'Import · AgentShelf',
+        loadComponent: () =>
+          import('./features/catalog/imports/import-detail/import-detail').then(
+            (m) => m.ImportDetail,
+          ),
+      },
       {
         path: 'catalog/:id',
         title: 'Edit product · AgentShelf',

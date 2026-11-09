@@ -1,0 +1,67 @@
+<a mat-button routerLink="/catalog" class="back">← Catalog</a>
+<header class="header">
+  <h1>Imports</h1>
+  <a mat-flat-button routerLink="/catalog/import">Import CSV</a>
+</header>
+
+@if (imports.isLoading()) {
+  <mat-progress-bar mode="indeterminate" aria-label="Loading imports" />
+}
+
+@if (imports.error()) {
+  <p class="alert" role="alert">{{ errorMessage() }}</p>
+} @else if (imports.hasValue()) {
+  @let page = imports.value();
+  @if (page.totalItems === 0) {
+    <section class="empty">
+      <h2>No imports yet</h2>
+      <p>Import your price list from a CSV file to add many products at once.</p>
+      <a mat-stroked-button routerLink="/catalog/import">Import CSV</a>
+    </section>
+  } @else {
+    <div class="table-wrap">
+      <table mat-table [dataSource]="page.items">
+        <caption class="visually-hidden">
+          Imports, newest first
+        </caption>
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef scope="col">Uploaded</th>
+          <td mat-cell *matCellDef="let i">{{ formatDate(i.createdAt) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="fileName">
+          <th mat-header-cell *matHeaderCellDef scope="col">File</th>
+          <td mat-cell *matCellDef="let i">
+            <a [routerLink]="['/catalog/imports', i.id]">{{ i.fileName }}</a>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef scope="col">Status</th>
+          <td mat-cell *matCellDef="let i">{{ statusLabel(i) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="result">
+          <th mat-header-cell *matHeaderCellDef scope="col">Result</th>
+          <td mat-cell *matCellDef="let i">
+            @if (i.startedAt) {
+              {{ i.rowsCreated }} added · {{ i.rowsUpdated }} updated
+              @if (i.rowsFailed) {
+                · <strong>{{ i.rowsFailed }} with errors</strong>
+              }
+            } @else {
+              —
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="page.totalItems"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[20, 50, 100]"
+      (page)="changePage($event)"
+      aria-label="Import pages"
+    />
+  }
+}

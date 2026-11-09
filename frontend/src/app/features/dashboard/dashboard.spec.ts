@@ -31,7 +31,8 @@ describe('Dashboard', () => {
     expect(steps).toHaveLength(5);
     expect(steps.filter((s) => s.classList.contains('done'))).toHaveLength(1);
     expect(steps[0].textContent).toContain('(done)');
-    expect(steps[1].textContent).toContain('Coming in M1');
+    expect(steps[1].querySelector('a')?.getAttribute('href')).toBe('/catalog/import');
+    expect(steps[2].textContent).toContain('Coming in M2');
   });
 
   it('explains the empty activity area', async () => {
