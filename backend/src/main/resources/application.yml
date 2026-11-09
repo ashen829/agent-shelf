@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: agentshelf
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  shutdown: graceful
+  error:
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+---
+# Local development: reads infra/.env, the same file Docker Compose uses.
+spring:
+  config:
+    activate:
+      on-profile: local
+    import: optional:file:../infra/.env[.properties]
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:agentshelf}
+    username: ${POSTGRES_USER:agentshelf}
+    password: ${POSTGRES_PASSWORD}
+
+---
+# Staging and production: every setting comes from the environment.
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${AGENTSHELF_DB_URL}
+    username: ${AGENTSHELF_DB_USER}
+    password: ${AGENTSHELF_DB_PASSWORD}

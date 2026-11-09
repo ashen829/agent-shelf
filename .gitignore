@@ -1,0 +1,17 @@
+# Secrets
+.env
+.env.*
+!.env.example
+application-local.yml
+
+# Build output
+target/
+node_modules/
+dist/
+.angular/
+
+# IDE and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
