@@ -102,8 +102,11 @@ Fill these in during M0 and keep them current.
 - CI (`.github/workflows/ci.yml`) runs the backend check, the frontend check and the dependency
   scan on every push to `main` and every pull request. Actions are pinned to commit SHAs; Dependabot updates them.
 
-Not built yet (planned later in M0):
-- End-to-end tests: `cd frontend && npx playwright test`
+- End-to-end tests (Playwright, real backend and database): start PostgreSQL, build the backend
+  jar once (`cd backend && ./mvnw -DskipTests package`), then `cd frontend && npm run e2e`.
+  Playwright starts the backend and the dev server, or reuses running ones. First time only:
+  `cd frontend && npx playwright install chromium`, or run with `E2E_CHANNEL=chrome` to use the
+  installed Google Chrome instead.
 
 ## Secrets and API cost (budget: $40/month of API credits)
 - The app reads the Claude key from `AGENTSHELF_CLAUDE_KEY`.

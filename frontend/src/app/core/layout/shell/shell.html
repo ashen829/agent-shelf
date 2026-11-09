@@ -1,4 +1,15 @@
 <mat-toolbar class="toolbar" role="banner">
+  @if (compact()) {
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Open navigation"
+      [attr.aria-expanded]="nav.opened"
+      (click)="nav.toggle()"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+  }
   <a class="brand" routerLink="/">AgentShelf</a>
   <span class="spacer"></span>
   @if (account(); as a) {
@@ -19,6 +30,44 @@
     </mat-menu>
   }
 </mat-toolbar>
-<main class="content">
-  <router-outlet />
-</main>
+
+<mat-sidenav-container class="container">
+  <mat-sidenav
+    #nav
+    class="nav"
+    [mode]="compact() ? 'over' : 'side'"
+    [opened]="!compact()"
+    [fixedInViewport]="compact()"
+  >
+    <mat-nav-list aria-label="Main">
+      <a
+        mat-list-item
+        routerLink="/"
+        routerLinkActive
+        #dashboardLink="routerLinkActive"
+        [routerLinkActiveOptions]="{ exact: true }"
+        [activated]="dashboardLink.isActive"
+        [attr.aria-current]="dashboardLink.isActive ? 'page' : null"
+        (click)="compact() && nav.close()"
+      >
+        Dashboard
+      </a>
+    </mat-nav-list>
+    <section aria-labelledby="coming-soon">
+      <h2 class="soon-heading" id="coming-soon">Coming soon</h2>
+      <ul class="soon">
+        @for (item of comingSoon; track item.label) {
+          <li>
+            {{ item.label }}<span class="milestone">{{ item.milestone }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <main class="content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,42 @@
+@if (account(); as a) {
+  <header class="header">
+    <h1>Welcome, {{ a.supplier.name }}</h1>
+    <p class="meta">Prices in {{ a.supplier.currency }} ({{ currencyName() }})</p>
+  </header>
+
+  <section aria-labelledby="get-started">
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title id="get-started">Get started</mat-card-title>
+        <mat-card-subtitle>Each step unlocks as AgentShelf grows.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <ol class="steps">
+          @for (step of steps; track step.title) {
+            <li class="step" [class.done]="step.done">
+              <span class="status" aria-hidden="true">{{ step.done ? '✓' : '' }}</span>
+              <div class="text">
+                <p class="title">
+                  {{ step.title }}
+                  <span class="visually-hidden">{{ step.done ? '(done)' : '(not started)' }}</span>
+                </p>
+                <p class="detail">{{ step.detail }}</p>
+              </div>
+              @if (step.milestone) {
+                <span class="soon">Coming in {{ step.milestone }}</span>
+              }
+            </li>
+          }
+        </ol>
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  <section class="empty" aria-labelledby="activity">
+    <h2 id="activity">Agent activity</h2>
+    <p>
+      No activity yet. When AI buying agents search your catalog and request quotes, you will see it
+      here.
+    </p>
+  </section>
+}
