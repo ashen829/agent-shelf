@@ -24,6 +24,16 @@ async function importProducts(page: Page): Promise<void> {
   await expect(page.getByRole('status')).toHaveText('Done', { timeout: 30_000 });
 }
 
+/**
+ * Picks an option in a Material select and waits until its panel has closed. Reopening a select
+ * while the previous panel is still animating out finds options that are about to be removed.
+ */
+async function choose(page: Page, select: string, option: string): Promise<void> {
+  await page.getByRole('combobox', { name: select }).click();
+  await page.getByRole('option', { name: option, exact: true }).click();
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+}
+
 function skuCells(page: Page) {
   return page.getByRole('row').locator('td:first-child');
 }
@@ -47,18 +57,14 @@ test('search, filter and sort the catalog; the URL keeps it', async ({ page }) =
   await expect(skuCells(page)).toHaveCount(6);
 
   // Category (with counts) and stock filters.
-  await page.getByRole('combobox', { name: 'Category' }).click();
-  await page.getByRole('option', { name: 'Fasteners (2)' }).click();
+  await choose(page, 'Category', 'Fasteners (2)');
   await expect(skuCells(page)).toHaveText(['BOLT-M8', 'SCREW-4X40']);
-  await page.getByRole('combobox', { name: 'Category' }).click();
-  await page.getByRole('option', { name: 'All categories' }).click();
-  await page.getByRole('combobox', { name: 'Stock' }).click();
-  await page.getByRole('option', { name: 'Out of stock' }).click();
+  await choose(page, 'Category', 'All categories');
+  await choose(page, 'Stock', 'Out of stock');
   await expect(skuCells(page)).toHaveText(['CEM-50', 'PVC-25']);
 
   // Sort by price, and the URL keeps everything across a reload.
-  await page.getByRole('combobox', { name: 'Sort by' }).click();
-  await page.getByRole('option', { name: 'Price: high to low' }).click();
+  await choose(page, 'Sort by', 'Price: high to low');
   await expect(skuCells(page)).toHaveText(['CEM-50', 'PVC-25']);
   await page.reload();
   await expect(skuCells(page)).toHaveText(['CEM-50', 'PVC-25']);
