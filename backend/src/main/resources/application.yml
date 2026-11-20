@@ -31,6 +31,12 @@ db-scheduler:
   delay-startup-until-context-ready: true
   threads: 4
 
+# AI cleanup (ADR 0006). Off unless switched on and given a Claude key.
+agentshelf:
+  enrichment:
+    enabled: ${AGENTSHELF_ENRICHMENT_ENABLED:false}
+    claude-key: ${AGENTSHELF_CLAUDE_KEY:}
+
 springdoc:
   api-docs:
     path: /v3/api-docs

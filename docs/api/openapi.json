@@ -9,6 +9,9 @@
     "url" : "/"
   } ],
   "tags" : [ {
+    "description" : "AI cleanup of the catalog, run in the background",
+    "name" : "AI suggestions"
+  }, {
     "description" : "CSV and Excel price list imports, run in the background",
     "name" : "Imports"
   }, {
@@ -186,6 +189,250 @@
         },
         "summary" : "Create a supplier account and its owner, and sign in",
         "tags" : [ "Auth" ]
+      }
+    },
+    "/api/v1/enrichment" : {
+      "get" : {
+        "operationId" : "getEnrichmentOverview",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrichmentOverview"
+                }
+              }
+            },
+            "description" : "The overview"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          }
+        },
+        "summary" : "Whether AI suggestions are available, and the latest job",
+        "tags" : [ "AI suggestions" ]
+      }
+    },
+    "/api/v1/enrichment/jobs" : {
+      "get" : {
+        "operationId" : "listEnrichmentJobs",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrichmentJobPage"
+                }
+              }
+            },
+            "description" : "A page of jobs"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          }
+        },
+        "summary" : "AI suggestion jobs, newest first",
+        "tags" : [ "AI suggestions" ]
+      },
+      "post" : {
+        "operationId" : "startEnrichment",
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrichmentJobResponse"
+                }
+              }
+            },
+            "description" : "Queued"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "A job is already running for this supplier"
+          },
+          "422" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "AI suggestions are not switched on"
+          }
+        },
+        "summary" : "Ask AI to suggest fixes for the active products (runs in the background)",
+        "tags" : [ "AI suggestions" ]
+      }
+    },
+    "/api/v1/enrichment/jobs/{id}" : {
+      "get" : {
+        "operationId" : "getEnrichmentJob",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrichmentJobResponse"
+                }
+              }
+            },
+            "description" : "The job"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such job for this supplier"
+          }
+        },
+        "summary" : "Status and results of one job",
+        "tags" : [ "AI suggestions" ]
+      }
+    },
+    "/api/v1/enrichment/jobs/{id}/suggestions" : {
+      "get" : {
+        "operationId" : "listEnrichmentSuggestions",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50,
+            "maximum" : 200,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SuggestionPage"
+                }
+              }
+            },
+            "description" : "A page of suggestions"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "No such job for this supplier"
+          }
+        },
+        "summary" : "One job's suggestions, grouped by product",
+        "tags" : [ "AI suggestions" ]
       }
     },
     "/api/v1/imports" : {
@@ -1127,6 +1374,111 @@
           }
         }
       },
+      "EnrichmentJobPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EnrichmentJobResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "size", "totalItems", "totalPages" ]
+      },
+      "EnrichmentJobResponse" : {
+        "type" : "object",
+        "properties" : {
+          "cacheReadTokens" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cacheWriteTokens" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "failureMessage" : {
+            "type" : [ "string", "null" ]
+          },
+          "finishedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "inputTokens" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "model" : {
+            "type" : "string"
+          },
+          "outputTokens" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "productsFailed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "productsTotal" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "QUEUED", "SUBMITTED", "COMPLETED", "FAILED" ]
+          },
+          "submittedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "suggestionsCreated" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "suggestionsDropped" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "cacheReadTokens", "cacheWriteTokens", "createdAt", "id", "inputTokens", "model", "outputTokens", "productsFailed", "productsTotal", "status", "suggestionsCreated", "suggestionsDropped" ]
+      },
+      "EnrichmentOverview" : {
+        "type" : "object",
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "latestJob" : {
+            "type" : "null",
+            "$ref" : "#/components/schemas/EnrichmentJobResponse"
+          }
+        },
+        "required" : [ "enabled" ]
+      },
       "ImportErrorItem" : {
         "type" : "object",
         "properties" : {
@@ -1525,6 +1877,74 @@
           }
         },
         "required" : [ "completeCatalog", "decimalSeparator", "mapping" ]
+      },
+      "SuggestionPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SuggestionResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "size", "totalItems", "totalPages" ]
+      },
+      "SuggestionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "confidence" : {
+            "type" : "number",
+            "description" : "0 to 1, how sure the model is",
+            "example" : 0.85
+          },
+          "field" : {
+            "type" : "string",
+            "enum" : [ "NAME", "CATEGORY", "UNIT", "DESCRIPTION" ]
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "newValue" : {
+            "type" : "string"
+          },
+          "oldValue" : {
+            "type" : [ "string", "null" ]
+          },
+          "productId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "productVersion" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED" ]
+          }
+        },
+        "required" : [ "confidence", "field", "id", "newValue", "productId", "productVersion", "reason", "status" ]
       },
       "SupplierResponse" : {
         "type" : "object",

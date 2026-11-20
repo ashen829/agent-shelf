@@ -56,6 +56,8 @@ describe('ProductList', () => {
 
   async function render(url = '/catalog') {
     const harness = await RouterTestingHarness.create(url);
+    // The AI suggestions card (tested on its own) stays hidden here.
+    http.expectOne('/api/v1/enrichment').flush({ enabled: false, latestJob: null });
     http
       .expectOne((r) => r.url === '/api/v1/products/categories')
       .flush({

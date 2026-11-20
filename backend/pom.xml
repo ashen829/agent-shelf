@@ -27,6 +27,10 @@
     <db-scheduler.version>17.1.0</db-scheduler.version>
     <commons-csv.version>1.14.1</commons-csv.version>
     <fastexcel-reader.version>0.20.2</fastexcel-reader.version>
+    <anthropic-java.version>3.11.0</anthropic-java.version>
+    <!-- Overrides Spring Boot's 1.62.0 (GHSA-ccrj-gw8r-854m, fixed in 1.67.0). The Anthropic SDK
+         brings opentelemetry-api. Remove once Spring Boot manages a fixed version. -->
+    <opentelemetry.version>1.68.0</opentelemetry.version>
   </properties>
 
   <dependencyManagement>
@@ -87,6 +91,12 @@
       <groupId>org.dhatim</groupId>
       <artifactId>fastexcel-reader</artifactId>
       <version>${fastexcel-reader.version}</version>
+    </dependency>
+    <!-- Claude Message Batches API for AI cleanup suggestions (ADR 0006). -->
+    <dependency>
+      <groupId>com.anthropic</groupId>
+      <artifactId>anthropic-java</artifactId>
+      <version>${anthropic-java.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

@@ -32,6 +32,9 @@ services:
       AGENTSHELF_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       # Plain http on localhost only. Real deployments keep Secure cookies behind TLS.
       SERVER_SERVLET_SESSION_COOKIE_SECURE: "false"
+      # AI cleanup: off unless switched on in .env.
+      AGENTSHELF_ENRICHMENT_ENABLED: ${AGENTSHELF_ENRICHMENT_ENABLED:-false}
+      AGENTSHELF_CLAUDE_KEY: ${AGENTSHELF_CLAUDE_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

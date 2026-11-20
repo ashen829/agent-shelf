@@ -17,6 +17,7 @@ import { ProductResponse } from '../../../api/generated/models';
 import { ProductsApi } from '../../../api/generated/services';
 import { toProblem } from '../../../core/errors/problem';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog';
+import { AiSuggestionsCard } from '../ai-suggestions/ai-suggestions-card';
 import { formatPrice } from '../money';
 
 type Status = 'ACTIVE' | 'ARCHIVED';
@@ -43,6 +44,7 @@ export const SEARCH_DELAY_MS = 300;
 @Component({
   selector: 'app-product-list',
   imports: [
+    AiSuggestionsCard,
     MatButtonModule,
     MatButtonToggleModule,
     MatFormFieldModule,

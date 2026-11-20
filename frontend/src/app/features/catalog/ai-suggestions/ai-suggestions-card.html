@@ -1,0 +1,41 @@
+@if (enabled()) {
+  <section class="card" aria-labelledby="ai-suggestions-title">
+    <div class="text">
+      <h2 id="ai-suggestions-title">AI suggestions</h2>
+      @let current = job();
+      <p role="status">
+        @if (current === null) {
+          Let AI check your product names, categories, units and missing descriptions. Nothing
+          changes until you approve it.
+        } @else if (isRunning(current)) {
+          Checking {{ current.productsTotal || 'your' }} products. This can take a few minutes; you
+          can leave this page.
+        } @else if (current.status === 'COMPLETED') {
+          @if (current.suggestionsCreated === 0) {
+            No fixes needed in the last check.
+          } @else {
+            {{ current.suggestionsCreated }}
+            {{ current.suggestionsCreated === 1 ? 'suggestion is' : 'suggestions are' }} ready.
+            Reviewing them comes in the next update.
+          }
+        } @else {
+          {{ current.failureMessage }}
+        }
+      </p>
+      @if (error(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+    </div>
+    <button
+      mat-stroked-button
+      type="button"
+      [disabled]="starting() || isRunning(current)"
+      (click)="start()"
+    >
+      {{ isRunning(current) ? 'Checking…' : 'Suggest fixes' }}
+    </button>
+    @if (isRunning(current)) {
+      <mat-progress-bar mode="indeterminate" aria-label="AI is checking your products" />
+    }
+  </section>
+}
