@@ -8,6 +8,7 @@ import com.agentshelf.enrichment.internal.domain.SuggestionRules.Checked;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 class SuggestionRulesTest {
@@ -26,7 +27,8 @@ class SuggestionRulesTest {
             new ProposedChange("name", "  PVC pipe 20 mm ", "Fixed letter case.", 0.912),
             new ProposedChange("UNIT", "Pcs", "Lower case unit.", 0.5),
             new ProposedChange("category", "Pipes", "Matches your category.", 1),
-            new ProposedChange("description", "A 20 mm PVC pipe.\nSold per piece.", "Missing.", 0));
+            new ProposedChange(
+                "description", "A 20 mm PVC pipe.\nSold per piece.", "Missing.", 0.5));
 
     assertThat(checked.dropped()).isZero();
     assertThat(checked.accepted())
@@ -50,7 +52,7 @@ class SuggestionRulesTest {
                 null,
                 "A 20 mm PVC pipe.\nSold per piece.",
                 "Missing.",
-                new BigDecimal("0.00")));
+                new BigDecimal("0.50")));
   }
 
   @Test
@@ -81,6 +83,43 @@ class SuggestionRulesTest {
 
     assertThat(checked.accepted()).isEmpty();
     assertThat(checked.dropped()).isEqualTo(10);
+  }
+
+  @Test
+  void dropsSuggestionsTheModelItselfDoubts() {
+    Checked checked =
+        check(
+            new ProposedChange("category", "Pipes", "Probably pipes.", 0.494),
+            new ProposedChange("name", "PVC pipe 20 mm", "Fixed case.", 0.495));
+
+    assertThat(checked.accepted()).extracting(Change::field).containsExactly(SuggestionField.NAME);
+    assertThat(checked.dropped()).isOne();
+  }
+
+  @Test
+  void onlyRespellsOrFillsUnitsAndNeverChangesWhatIsSold() {
+    assertThat(unitChange("Nos", "pcs")).isTrue();
+    assertThat(unitChange("Nos.", "pcs")).isTrue();
+    assertThat(unitChange("PR", "pair")).isTrue();
+    assertThat(unitChange("Litres", "l")).isTrue();
+    assertThat(unitChange("COIL", "coil")).isTrue();
+    assertThat(unitChange(null, "box")).isTrue();
+    assertThat(unitChange(" ", "kg")).isTrue();
+
+    assertThat(unitChange("tube", "pcs")).isFalse();
+    assertThat(unitChange("tin", "can")).isFalse();
+    assertThat(unitChange("COIL", "roll")).isFalse();
+    assertThat(unitChange("kg", "g")).isFalse();
+    assertThat(unitChange(null, "bundle")).isFalse();
+  }
+
+  private static boolean unitChange(@Nullable String current, String suggested) {
+    ProductSnapshot product =
+        new ProductSnapshot(UUID.randomUUID(), 1, "A", "A", null, null, current);
+    return !SuggestionRules.check(
+            product, List.of(new ProposedChange("unit", suggested, "Unit.", 0.9)))
+        .accepted()
+        .isEmpty();
   }
 
   @Test
