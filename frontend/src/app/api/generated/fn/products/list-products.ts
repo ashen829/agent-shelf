@@ -11,15 +11,29 @@ import { ProductPage } from '../../models/product-page';
 
 export interface ListProducts$Params {
   status?: 'ACTIVE' | 'ARCHIVED';
+
+/**
+ * Words that must all appear in the SKU, name or category
+ */
+  q?: (string | null);
+
+/**
+ * Only this category (exact name, see /categories)
+ */
+  category?: (string | null);
+  stock?: ('IN_STOCK' | 'OUT_OF_STOCK' | null);
   page?: number;
   size?: number;
-  sort?: 'NAME' | 'NAME_DESC' | 'SKU' | 'UPDATED_DESC';
+  sort?: 'NAME' | 'NAME_DESC' | 'SKU' | 'UPDATED_DESC' | 'PRICE' | 'PRICE_DESC';
 }
 
 export function listProducts(http: HttpClient, rootUrl: string, params?: ListProducts$Params, context?: HttpContext): Observable<StrictHttpResponse<ProductPage>> {
   const rb = new RequestBuilder(rootUrl, listProducts.PATH, 'get');
   if (params) {
     rb.query('status', params.status, {});
+    rb.query('q', params.q, {});
+    rb.query('category', params.category, {});
+    rb.query('stock', params.stock, {});
     rb.query('page', params.page, {});
     rb.query('size', params.size, {});
     rb.query('sort', params.sort, {});

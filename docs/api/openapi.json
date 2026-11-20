@@ -607,6 +607,34 @@
             "enum" : [ "ACTIVE", "ARCHIVED" ]
           }
         }, {
+          "description" : "Words that must all appear in the SKU, name or category",
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "Only this category (exact name, see /categories)",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "stock",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "IN_STOCK", "OUT_OF_STOCK" ]
+          }
+        }, {
           "in" : "query",
           "name" : "page",
           "required" : false,
@@ -634,7 +662,7 @@
           "schema" : {
             "type" : "string",
             "default" : "NAME",
-            "enum" : [ "NAME", "NAME_DESC", "SKU", "UPDATED_DESC" ]
+            "enum" : [ "NAME", "NAME_DESC", "SKU", "UPDATED_DESC", "PRICE", "PRICE_DESC" ]
           }
         } ],
         "responses" : {
@@ -656,7 +684,7 @@
                 }
               }
             },
-            "description" : "Invalid page, size or sort"
+            "description" : "Invalid page, size, sort or filter"
           },
           "401" : {
             "content" : {
@@ -667,9 +695,19 @@
               }
             },
             "description" : "Not signed in"
+          },
+          "422" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Search text has too many words"
           }
         },
-        "summary" : "One page of products",
+        "summary" : "One page of products, optionally searched and filtered",
         "tags" : [ "Products" ]
       },
       "post" : {
@@ -727,6 +765,57 @@
           }
         },
         "summary" : "Add a product",
+        "tags" : [ "Products" ]
+      }
+    },
+    "/api/v1/products/categories" : {
+      "get" : {
+        "operationId" : "listProductCategories",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 100,
+            "maximum" : 500,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoryPage"
+                }
+              }
+            },
+            "description" : "A page of categories, by name"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not signed in"
+          }
+        },
+        "summary" : "Categories of active products, with how many products each has",
         "tags" : [ "Products" ]
       }
     },
@@ -963,6 +1052,47 @@
           }
         },
         "required" : [ "email", "role", "supplier", "userId" ]
+      },
+      "CategoryItem" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "count", "name" ]
+      },
+      "CategoryPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CategoryItem"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "size", "totalItems", "totalPages" ]
       },
       "ColumnMappingDto" : {
         "type" : "object",

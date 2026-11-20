@@ -4,6 +4,7 @@ import com.agentshelf.shared.CurrencyCode;
 import com.agentshelf.shared.DomainException;
 import com.agentshelf.shared.Ids;
 import com.agentshelf.shared.Money;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,6 +40,10 @@ public class Product {
   private Instant createdAt;
   private Instant updatedAt;
   @Version private @Nullable Long version;
+
+  /** Lower-case SKU, name and category, computed by PostgreSQL (V6). Only used for search. */
+  @Column(insertable = false, updatable = false)
+  private @Nullable String searchText;
 
   protected Product() {}
 
