@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -23,8 +24,37 @@ public final class SuggestionRules {
   /** Units the model may suggest. Kept short so units are consistent across a catalog. */
   public static final List<String> UNITS =
       List.of(
-          "pcs", "pair", "set", "box", "pack", "case", "pallet", "roll", "sheet", "bag", "bottle",
-          "can", "kg", "g", "t", "l", "ml", "m", "cm", "mm", "m2", "m3");
+          "pcs", "pair", "set", "box", "pack", "case", "pallet", "roll", "coil", "sheet", "bag",
+          "bottle", "can", "tin", "tube", "kg", "g", "t", "l", "ml", "m", "cm", "mm", "m2", "m3");
+
+  /**
+   * Other spellings of the allowed units. A unit may only be changed to another spelling of the
+   * same unit ("Nos" to "pcs"), never to a different one ("tube" to "pcs" changes what is sold).
+   */
+  static final Map<String, List<String>> UNIT_SPELLINGS =
+      Map.ofEntries(
+          Map.entry(
+              "pcs", List.of("pc", "piece", "pieces", "nos", "no", "ea", "each", "unit", "units")),
+          Map.entry("pair", List.of("pr", "prs", "pairs")),
+          Map.entry("set", List.of("sets")),
+          Map.entry("box", List.of("bx", "boxes")),
+          Map.entry("pack", List.of("pk", "pkt", "packet", "packs")),
+          Map.entry("case", List.of("cs", "cases")),
+          Map.entry("roll", List.of("rl", "rolls")),
+          Map.entry("coil", List.of("coils")),
+          Map.entry("sheet", List.of("sht", "sheets")),
+          Map.entry("bag", List.of("bags")),
+          Map.entry("bottle", List.of("btl", "bottles")),
+          Map.entry("tube", List.of("tubes")),
+          Map.entry("kg", List.of("kgs", "kilo", "kilogram", "kilograms")),
+          Map.entry("l", List.of("ltr", "lt", "litre", "litres", "liter", "liters")),
+          Map.entry("ml", List.of("mls")),
+          Map.entry("m", List.of("mtr", "mtrs", "metre", "metres", "meter", "meters")),
+          Map.entry("m2", List.of("sqm", "sq m", "m²")),
+          Map.entry("m3", List.of("cbm", "cu m", "m³")));
+
+  /** Below this, the model itself isn't sure: such suggestions only waste the supplier's time. */
+  static final BigDecimal MIN_CONFIDENCE = new BigDecimal("0.50");
 
   static final int MAX_REASON_LENGTH = 300;
 
@@ -70,7 +100,7 @@ public final class SuggestionRules {
             && value.length() <= field.maxLength()
             && !CONTROL.matcher(value).find()
             && (field == SuggestionField.DESCRIPTION || value.indexOf('\n') < 0)
-            && (field != SuggestionField.UNIT || UNITS.contains(value))
+            && (field != SuggestionField.UNIT || sameUnit(oldValue, value))
             // Descriptions are only written where there is none: never replace the supplier's text.
             && (field != SuggestionField.DESCRIPTION || oldValue == null || oldValue.isBlank())
             && !value.equals(oldValue)
@@ -80,13 +110,23 @@ public final class SuggestionRules {
     if (!valid) {
       return Optional.empty();
     }
-    return Optional.of(
-        new Change(
-            field,
-            oldValue,
-            value,
-            reason,
-            BigDecimal.valueOf(confidence).setScale(2, RoundingMode.HALF_UP)));
+    BigDecimal rounded = BigDecimal.valueOf(confidence).setScale(2, RoundingMode.HALF_UP);
+    if (rounded.compareTo(MIN_CONFIDENCE) < 0) {
+      return Optional.empty();
+    }
+    return Optional.of(new Change(field, oldValue, value, reason, rounded));
+  }
+
+  /** An allowed unit that fills a missing unit or respells the current one. */
+  private static boolean sameUnit(@Nullable String current, String suggested) {
+    if (!UNITS.contains(suggested)) {
+      return false;
+    }
+    if (current == null || current.isBlank()) {
+      return true;
+    }
+    String now = current.strip().toLowerCase(Locale.ROOT).replaceAll("\\.$", "");
+    return now.equals(suggested) || UNIT_SPELLINGS.getOrDefault(suggested, List.of()).contains(now);
   }
 
   private static @Nullable String current(ProductSnapshot product, SuggestionField field) {
