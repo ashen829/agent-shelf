@@ -62,6 +62,7 @@ All commands — full checks, formatting, the API client, end-to-end tests — a
 | Frontend | Angular 22 (standalone components, signals), Angular Material                                                        |
 | API      | REST under `/api/v1`, contract in [`docs/api/openapi.json`](docs/api/openapi.json), Angular client generated from it |
 | Security | Server sessions in PostgreSQL, HttpOnly cookies, CSRF protection, tenant isolation by `supplier_id`                  |
+| AI       | Claude Haiku through the Message Batches API, as a background job; suggestions only, the supplier approves          |
 | Quality  | NullAway, Spotless, ESLint, Prettier, JUnit + Testcontainers, Vitest, Playwright                                     |
 | CI       | GitHub Actions on every PR: backend, frontend, end-to-end, Docker images, dependency scan                            |
 
@@ -70,7 +71,8 @@ Read more:
 - [Product](docs/PRODUCT.md): features, MCP tools and data model
 - [Architecture](docs/ARCHITECTURE.md): modules, layers and patterns
 - [Roadmap](docs/ROADMAP.md): milestones and their "Done when"
-- [Decisions](docs/adr/): modular monolith, authentication, background jobs, UI library
+- [Decisions](docs/adr/): modular monolith, authentication, background jobs, UI library, Excel import,
+  AI cleanup
 
 ## Contributing
 

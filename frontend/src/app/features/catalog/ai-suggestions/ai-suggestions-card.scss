@@ -1,0 +1,36 @@
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.text {
+  flex: 1 1 320px;
+}
+
+h2 {
+  margin: 0 0 4px;
+  font: var(--mat-sys-title-medium);
+}
+
+p {
+  margin: 0;
+}
+
+.alert {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+mat-progress-bar {
+  flex-basis: 100%;
+}

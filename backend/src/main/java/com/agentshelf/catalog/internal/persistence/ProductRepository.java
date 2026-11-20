@@ -1,11 +1,13 @@
 package com.agentshelf.catalog.internal.persistence;
 
 import com.agentshelf.catalog.internal.domain.Product;
+import com.agentshelf.catalog.internal.domain.ProductStatus;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +20,12 @@ public interface ProductRepository
     extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 
   Optional<Product> findByIdAndSupplierId(UUID id, UUID supplierId);
+
+  /** Products of one supplier with a status, by SKU, at most {@code limit}. */
+  List<Product> findBySupplierIdAndStatusOrderBySkuAsc(
+      UUID supplierId, ProductStatus status, Limit limit);
+
+  List<Product> findBySupplierIdAndIdIn(UUID supplierId, Collection<UUID> ids);
 
   @Query(
       """

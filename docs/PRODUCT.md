@@ -50,9 +50,10 @@ Every table also has `id` (UUID), `created_at`, `updated_at` and `version`.
 - `import_job`: supplier_id, file_name, status, rows_total, rows_failed, error_report
 
 **enrichment**
-- `enrichment_job`: supplier_id, batch_id, status, input_tokens, output_tokens
-- `product_suggestion`: supplier_id, product_id, field, old_value, new_value, reason,
-  confidence, status
+- `enrichment_job`: supplier_id, status, model, batch_id, products_total, products_failed,
+  suggestions_created, suggestions_dropped, input/output/cache token counts
+- `product_suggestion`: supplier_id, enrichment_job_id, product_id, product_version, field,
+  old_value, new_value, reason, confidence, status
 
 **rules**
 - `price_tier`: supplier_id, product_id, min_qty, unit_price
@@ -76,6 +77,10 @@ Quote status flow: `PENDING` → `APPROVED`, `REJECTED` or `EXPIRED`.
   units, and the rule "never invent specs; mark unknowns".
 - Each product's raw fields go in. JSON suggestions come out (field, new value, reason, confidence).
 - Create a suggestion only when something actually changes.
+- Fields: name, category, unit (from a fixed list) and a short description where there is none.
+  SKU, price and stock are never suggested.
+- The server checks every suggestion again (allowed field, length, unit list, confidence) and
+  drops anything that breaks a rule.
 
 ## Demo scenario (M6)
 1. A fake wholesaler with about 500 hardware products and deliberately messy names.

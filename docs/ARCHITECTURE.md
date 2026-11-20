@@ -78,11 +78,16 @@ catalog/
 - Every tool call publishes an event that `insights` stores.
 
 ## AI provider
-- `enrichment` defines a port (`ProductEnrichmentModel`). The Claude adapter implements it
-  with the Message Batches API and prompt caching. Another provider or a local model can
-  replace it without touching the rest of the module.
-- Validate the AI's JSON output against a schema. Reject anything invalid.
-- Track tokens and cost per job.
+- `enrichment` defines a port (`ProductEnrichmentModel`): submit a batch, then poll it. The
+  Claude adapter implements it with the official Anthropic Java SDK, the Message Batches API and
+  a cached system prompt. Another provider or a local model can replace it without touching the
+  rest of the module. Details in `docs/adr/0006-ai-cleanup.md`.
+- The AI's answer must match a JSON schema (structured outputs), and `SuggestionRules` checks
+  every value again on the server. Anything invalid is dropped and counted.
+- AI never changes a product. It creates `PENDING` suggestions that the supplier approves.
+- Token counts are stored on every job. Cost per job is shown from them (M2).
+- Off unless `AGENTSHELF_ENRICHMENT_ENABLED=true` and `AGENTSHELF_CLAUDE_KEY` are set. Tests use
+  a fake model and never call the API.
 
 ## Security
 - Dashboard login with Spring Security. Use httpOnly, secure session cookies with CSRF
