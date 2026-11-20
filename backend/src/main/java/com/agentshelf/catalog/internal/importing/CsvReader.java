@@ -33,11 +33,28 @@ public final class CsvReader {
 
   /** Checks a whole upload before anything is stored. */
   public static Summary inspect(byte[] content) {
+    checkSize(content);
+    return inspectConverted(content);
+  }
+
+  /** Rejects empty uploads and uploads over 10 MB. */
+  static void checkSize(byte[] content) {
     if (content.length == 0) {
-      throw new InvalidCsvException("The file is empty.");
+      throw new InvalidImportFileException("The file is empty.");
     }
     if (content.length > MAX_BYTES) {
-      throw new InvalidCsvException("The file is larger than 10 MB. Split it into smaller files.");
+      throw new InvalidImportFileException(
+          "The file is larger than 10 MB. Split it into smaller files.");
+    }
+  }
+
+  /**
+   * Like {@link #inspect} for CSV made from an Excel upload: the upload's size was checked before
+   * conversion, and the CSV may be larger than the original file.
+   */
+  static Summary inspectConverted(byte[] content) {
+    if (content.length == 0) {
+      throw new InvalidImportFileException("The file is empty.");
     }
     String text = decode(content);
     char delimiter = detectDelimiter(text);
@@ -50,13 +67,13 @@ public final class CsvReader {
           if (isHeader) {
             headers.addAll(namedHeaders(row.values()));
           } else if (++rows[0] > MAX_ROWS) {
-            throw new InvalidCsvException(
+            throw new InvalidImportFileException(
                 "The file has more than 20,000 product rows. Split it into smaller files.");
           }
           return true;
         });
     if (headers.isEmpty() || rows[0] == 0) {
-      throw new InvalidCsvException(
+      throw new InvalidImportFileException(
           "The file needs a header row with column names and at least one product row under it.");
     }
     return new Summary(delimiter, List.copyOf(headers), rows[0]);
@@ -131,7 +148,7 @@ public final class CsvReader {
         header = false;
       }
     } catch (IOException | UncheckedIOException | IllegalStateException e) {
-      throw new InvalidCsvException(
+      throw new InvalidImportFileException(
           "The file isn't valid CSV. Check for a quote (\") that is opened but never closed.");
     }
   }
@@ -147,7 +164,7 @@ public final class CsvReader {
               .toString();
       return text.startsWith("﻿") ? text.substring(1) : text;
     } catch (CharacterCodingException e) {
-      throw new InvalidCsvException(
+      throw new InvalidImportFileException(
           "The file isn't saved as UTF-8. In Excel, use Save As and choose \"CSV UTF-8\".");
     }
   }

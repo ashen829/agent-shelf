@@ -27,27 +27,30 @@ describe('ImportUpload', () => {
     };
   }
 
-  it('uploads the file with its name and opens the import', async () => {
-    const { component } = render();
-    const file = new File(['sku,name,price\nA,B,1\n'], 'prices.csv', { type: 'text/csv' });
+  it.each(['prices.csv', 'Prices.XLSX'])(
+    'uploads %s with its name and opens the import',
+    async (name) => {
+      const { component } = render();
+      const file = new File(['sku,name,price\nA,B,1\n'], name);
 
-    const done = component.upload(file);
-    const request = http.expectOne('/api/v1/imports');
-    expect(request.request.method).toBe('POST');
-    const body = request.request.body as FormData;
-    expect((body.get('file') as File).name).toBe('prices.csv');
-    request.flush({ importJob: JOB, preview: PREVIEW }, { status: 201, statusText: 'Created' });
-    await done;
+      const done = component.upload(file);
+      const request = http.expectOne('/api/v1/imports');
+      expect(request.request.method).toBe('POST');
+      const body = request.request.body as FormData;
+      expect((body.get('file') as File).name).toBe(name);
+      request.flush({ importJob: JOB, preview: PREVIEW }, { status: 201, statusText: 'Created' });
+      await done;
 
-    expect(navigate).toHaveBeenCalledWith(['/catalog/imports', JOB.id]);
-  });
+      expect(navigate).toHaveBeenCalledWith(['/catalog/imports', JOB.id]);
+    },
+  );
 
   it('refuses other file types and files over 10 MB before uploading', async () => {
     const { component, fixture, element } = render();
 
-    await component.upload(new File(['x'], 'prices.xlsx'));
+    await component.upload(new File(['x'], 'prices.pdf'));
     fixture.detectChanges();
-    expect(element.querySelector('[role=alert]')?.textContent).toContain('CSV UTF-8');
+    expect(element.querySelector('[role=alert]')?.textContent).toContain('Excel file (.xlsx)');
 
     const big = new File(['x'], 'big.csv');
     Object.defineProperty(big, 'size', { value: 10 * 1024 * 1024 + 1 });

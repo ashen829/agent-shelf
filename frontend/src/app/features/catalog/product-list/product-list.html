@@ -2,7 +2,7 @@
   <h1>Catalog</h1>
   <div class="header-actions">
     <a mat-button routerLink="/catalog/imports">Imports</a>
-    <a mat-stroked-button routerLink="/catalog/import">Import CSV</a>
+    <a mat-stroked-button routerLink="/catalog/import">Import price list</a>
     <a mat-flat-button routerLink="/catalog/new">Add product</a>
   </div>
 </header>
@@ -86,9 +86,9 @@
         </button>
       } @else if (status() === 'ACTIVE') {
         <h2>No products yet</h2>
-        <p>Import your price list from a CSV file, or add products one by one.</p>
+        <p>Import your price list from an Excel or CSV file, or add products one by one.</p>
         <div class="empty-actions">
-          <a mat-flat-button routerLink="/catalog/import">Import CSV</a>
+          <a mat-flat-button routerLink="/catalog/import">Import price list</a>
           <a mat-stroked-button routerLink="/catalog/new">Add product</a>
         </div>
       } @else {

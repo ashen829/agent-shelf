@@ -23,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-/** CSV import use cases for the signed-in supplier. The import itself runs in ImportRunner. */
+/**
+ * CSV and Excel import use cases for the signed-in supplier. The import itself runs in
+ * ImportRunner.
+ */
 @Service
 public class ImportService {
 
@@ -56,12 +59,23 @@ public class ImportService {
       List<String> headers, List<CsvReader.Row> rows, int rowCount, ColumnMapping suggested) {}
 
   /**
-   * Checks and stores an upload. Only quick checks run here (encoding, size, row count); the
-   * products are imported later, in the background.
+   * Checks and stores an upload. Only quick checks run here (type, encoding, size, row count); the
+   * products are imported later, in the background. Excel files are stored as CSV made from their
+   * first sheet, so the rest of the import is the same for both types.
    */
   @Transactional
-  public ImportJob upload(CurrentUser user, String fileName, byte[] content) {
-    CsvReader.Summary summary = CsvReader.inspect(content);
+  public ImportJob upload(CurrentUser user, String fileName, byte[] upload) {
+    byte[] content;
+    CsvReader.Summary summary;
+    if (XlsxReader.isXlsx(upload)) {
+      content = XlsxReader.toCsv(upload);
+      summary = CsvReader.inspectConverted(content);
+    } else if (XlsxReader.isOldOrProtectedExcel(upload)) {
+      throw new InvalidImportFileException(XlsxReader.OLD_OR_PROTECTED);
+    } else {
+      content = upload;
+      summary = CsvReader.inspect(content);
+    }
     // Flush now: the file row below references the job row (foreign key).
     ImportJob job =
         jobs.saveAndFlush(

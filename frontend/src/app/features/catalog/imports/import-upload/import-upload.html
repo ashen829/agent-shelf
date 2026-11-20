@@ -1,8 +1,8 @@
 <a mat-button routerLink="/catalog" class="back">← Catalog</a>
 <h1>Import a price list</h1>
 <p class="intro">
-  Upload a CSV file with one product per row and column names in the first row. Products are matched
-  by SKU: new SKUs are added and existing ones are updated.
+  Upload an Excel or CSV file with one product per row and column names in the first row. Products
+  are matched by SKU: new SKUs are added and existing ones are updated.
 </p>
 
 @if (error(); as message) {
@@ -17,17 +17,17 @@
   (drop)="onDrop($event)"
 >
   <input
-    id="csv-file"
+    id="price-list-file"
     class="file-input"
     type="file"
-    accept=".csv,text/csv"
+    accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
     [disabled]="uploading()"
     (change)="onFileChosen($event)"
   />
-  <label for="csv-file" class="choose">{{
-    uploading() ? 'Uploading…' : 'Choose a CSV file'
+  <label for="price-list-file" class="choose">{{
+    uploading() ? 'Uploading…' : 'Choose a file'
   }}</label>
-  <p class="hint">or drag it here · UTF-8 · up to 10 MB and 20,000 rows</p>
+  <p class="hint">or drag it here · Excel (.xlsx) or CSV (UTF-8) · up to 10 MB and 20,000 rows</p>
   @if (uploading()) {
     <mat-progress-bar mode="indeterminate" aria-label="Uploading the file" />
   }
@@ -37,13 +37,14 @@
   <h2 id="tips">Tips</h2>
   <ul>
     <li>
-      In Excel: <strong>File → Save As → CSV UTF-8</strong>. Other formats can garble names with
-      accents or non-Latin letters.
+      Excel files: only the first sheet is read. Format SKU columns as text so codes like 00123 keep
+      their leading zeros.
     </li>
     <li>
       You need at least columns for SKU, name and price. Stock, unit, category and description are
       optional.
     </li>
+    <li>CSV files: in Excel, use <strong>File → Save As → CSV UTF-8</strong>.</li>
     <li>Only changes? Upload just those rows: products not in the file stay as they are.</li>
   </ul>
   <a mat-button routerLink="/catalog/imports">See earlier imports</a>

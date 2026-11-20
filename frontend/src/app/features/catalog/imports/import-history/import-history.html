@@ -1,7 +1,7 @@
 <a mat-button routerLink="/catalog" class="back">← Catalog</a>
 <header class="header">
   <h1>Imports</h1>
-  <a mat-flat-button routerLink="/catalog/import">Import CSV</a>
+  <a mat-flat-button routerLink="/catalog/import">Import price list</a>
 </header>
 
 @if (imports.isLoading()) {
@@ -15,8 +15,8 @@
   @if (page.totalItems === 0) {
     <section class="empty">
       <h2>No imports yet</h2>
-      <p>Import your price list from a CSV file to add many products at once.</p>
-      <a mat-stroked-button routerLink="/catalog/import">Import CSV</a>
+      <p>Import your price list from an Excel or CSV file to add many products at once.</p>
+      <a mat-stroked-button routerLink="/catalog/import">Import price list</a>
     </section>
   } @else {
     <div class="table-wrap">

@@ -31,7 +31,7 @@ import { UploadResponse } from '../models/upload-response';
 
 
 /**
- * CSV price list imports, run in the background
+ * CSV and Excel price list imports, run in the background
  */
 @Injectable({ providedIn: 'root' })
 export class ImportsApi extends BaseService {
@@ -76,7 +76,7 @@ export class ImportsApi extends BaseService {
   static readonly UploadImportPath = '/api/v1/imports';
 
   /**
-   * Upload a CSV file (UTF-8, at most 10 MB and 20,000 rows).
+   * Upload a CSV file (UTF-8) or an Excel file (.xlsx, first sheet), at most 10 MB and 20,000 rows.
    *
    *
    *
@@ -91,7 +91,7 @@ export class ImportsApi extends BaseService {
   }
 
   /**
-   * Upload a CSV file (UTF-8, at most 10 MB and 20,000 rows).
+   * Upload a CSV file (UTF-8) or an Excel file (.xlsx, first sheet), at most 10 MB and 20,000 rows.
    *
    *
    *

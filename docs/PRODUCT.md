@@ -12,7 +12,7 @@
 - Start with free pilots for 3–5 suppliers, then charge a monthly fee per supplier.
 
 ## Features (each one ships in a milestone, see `ROADMAP.md`)
-1. **Import**: CSV and Excel upload, a column-mapping screen, and an error report.
+1. **Import**: CSV and Excel (.xlsx, first sheet) upload, a column-mapping screen, and an error report.
 2. **AI cleanup**: Claude suggests fixes to names, units, categories, missing attributes and
    short descriptions, and flags duplicates and odd prices. The supplier approves or rejects
    each suggestion.

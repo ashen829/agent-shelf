@@ -35,7 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(path = "/api/v1/imports", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Imports", description = "CSV price list imports, run in the background")
+@Tag(name = "Imports", description = "CSV and Excel price list imports, run in the background")
 @ApiResponse(
     responseCode = "401",
     description = "Not signed in",
@@ -55,7 +55,8 @@ class ImportController {
 
   @Operation(
       operationId = "uploadImport",
-      summary = "Upload a CSV file (UTF-8, at most 10 MB and 20,000 rows)")
+      summary =
+          "Upload a CSV file (UTF-8) or an Excel file (.xlsx, first sheet), at most 10 MB and 20,000 rows")
   @ApiResponse(responseCode = "201", description = "Checked and stored; match its columns next")
   @ApiResponse(
       responseCode = "413",
@@ -66,7 +67,7 @@ class ImportController {
               schema = @Schema(implementation = ProblemDetail.class)))
   @ApiResponse(
       responseCode = "422",
-      description = "Not a usable CSV file (encoding, rows, quotes)",
+      description = "Not a usable CSV or Excel file (type, encoding, rows, quotes)",
       content =
           @Content(
               mediaType = ProblemResponses.MEDIA_TYPE,

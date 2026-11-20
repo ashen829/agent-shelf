@@ -8,10 +8,12 @@ import com.agentshelf.BrowserClient;
 import com.agentshelf.Eventually;
 import com.agentshelf.TestcontainersConfiguration;
 import com.agentshelf.catalog.internal.importing.ImportRunner;
+import com.agentshelf.catalog.internal.importing.TestXlsx;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +24,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import tools.jackson.databind.JsonNode;
 
-/** CSV imports end to end: upload over HTTP, background job on PostgreSQL, results and errors. */
+/**
+ * CSV and Excel imports end to end: upload over HTTP, background job on PostgreSQL, results and
+ * errors.
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 class ImportApiIT {
@@ -227,6 +232,45 @@ class ImportApiIT {
     assertThat(job.path("status").asString()).isEqualTo("COMPLETED");
     assertThat(job.path("rowsUnchanged").asInt()).isEqualTo(2);
     assertThat(json(supplier.get("/api/v1/products")).path("totalItems").asLong()).isEqualTo(2);
+  }
+
+  @Test
+  void importsTheFirstSheetOfAnExcelFileAndReportsErrorsWithExcelRowNumbers() {
+    byte[] xlsx =
+        TestXlsx.workbook(
+            TestXlsx.row(1, List.of("Item code", "Description", "Unit price"))
+                + TestXlsx.row(2, List.of("XL-1", "Copper pipe", 1250.5))
+                // Row 3 left blank on purpose.
+                + TestXlsx.row(4, List.of("XL-2", "Elbow", "twelve")),
+            TestXlsx.row(1, List.of("Notes")));
+    HttpResponse<String> uploaded = supplier.upload("/api/v1/imports", "prices.xlsx", xlsx);
+    assertThat(uploaded.statusCode()).as(uploaded.body()).isEqualTo(201);
+    JsonNode upload = json(uploaded);
+    assertThat(upload.path("preview").path("headers").valueStream().map(JsonNode::asString))
+        .containsExactly("Item code", "Description", "Unit price");
+    assertThat(upload.path("importJob").path("fileName").asString()).isEqualTo("prices.xlsx");
+
+    JsonNode done = startAndWait(id(upload), mapping(0, 1, 2), ".", false);
+
+    assertThat(done.path("rowsCreated").asInt()).isEqualTo(1);
+    JsonNode products = json(supplier.get("/api/v1/products?q=XL-1"));
+    assertThat(products.path("items").get(0).path("price").path("amount").asString())
+        .isEqualTo("1250.5000");
+    JsonNode errors =
+        json(supplier.get("/api/v1/imports/" + done.path("id").asString() + "/errors"));
+    assertThat(errors.path("items").get(0).path("rowNumber").asInt()).isEqualTo(4);
+  }
+
+  @Test
+  void rejectsOldAndPasswordProtectedExcelFiles() {
+    byte[] xls = {
+      (byte) 0xD0, (byte) 0xCF, 0x11, (byte) 0xE0, (byte) 0xA1, (byte) 0xB1, 0x1A, (byte) 0xE1, 0
+    };
+
+    HttpResponse<String> response = supplier.upload("/api/v1/imports", "old.xls", xls);
+
+    assertThat(response.statusCode()).isEqualTo(422);
+    assertThat(json(response).path("detail").asString()).contains("Save As").contains(".xlsx");
   }
 
   @Test

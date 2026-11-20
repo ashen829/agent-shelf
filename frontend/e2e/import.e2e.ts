@@ -30,7 +30,7 @@ test('import a price list, fix the rows with errors and import them again', asyn
     .getByRole('navigation', { name: 'Main' })
     .getByRole('link', { name: 'Catalog' })
     .click();
-  await page.getByRole('link', { name: 'Import CSV' }).first().click();
+  await page.getByRole('link', { name: 'Import price list' }).first().click();
   await expect(page.getByRole('heading', { name: 'Import a price list' })).toBeVisible();
   await expectAccessible(page);
 
@@ -95,4 +95,21 @@ test('import a price list, fix the rows with errors and import them again', asyn
   await expect(page.getByRole('link', { name: 'hardware-fixed.csv' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'hardware.csv', exact: true })).toBeVisible();
   await expectAccessible(page);
+});
+
+test('import the first sheet of an Excel file', async ({ page }) => {
+  await signUp(page, 'Excel Traders', uniqueEmail());
+  await page.goto('/catalog/import');
+
+  // A small .xlsx with SKU, Name, Price and Stock columns (e2e/fixtures/valves.xlsx).
+  // Relative paths resolve from the working directory: `frontend/`, where Playwright runs.
+  await page.locator('input[type=file]').setInputFiles('e2e/fixtures/valves.xlsx');
+  await expect(page.getByRole('heading', { name: 'Match the columns' })).toBeVisible();
+  await expect(page.getByText('For example: XL-100')).toBeVisible();
+  await page.getByRole('button', { name: 'Import 2 rows' }).click();
+  await expect(page.getByRole('status')).toHaveText('Done', { timeout: 30_000 });
+
+  await page.getByRole('link', { name: 'Go to catalog' }).click();
+  await expect(page.getByRole('row', { name: /XL-100/ })).toContainText('Brass valve 15 mm');
+  await expect(page.getByRole('row', { name: /XL-100/ })).toContainText('850.75');
 });
