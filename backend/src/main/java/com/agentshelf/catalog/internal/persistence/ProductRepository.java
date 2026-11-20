@@ -1,7 +1,6 @@
 package com.agentshelf.catalog.internal.persistence;
 
 import com.agentshelf.catalog.internal.domain.Product;
-import com.agentshelf.catalog.internal.domain.ProductStatus;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -10,15 +9,15 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 /** Every query is scoped by supplier: a product of another supplier is simply not found. */
-public interface ProductRepository extends JpaRepository<Product, UUID> {
+public interface ProductRepository
+    extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 
   Optional<Product> findByIdAndSupplierId(UUID id, UUID supplierId);
-
-  Page<Product> findBySupplierIdAndStatus(UUID supplierId, ProductStatus status, Pageable page);
 
   @Query(
       """
@@ -44,4 +43,17 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
           + " p.updatedAt = :now, p.version = p.version + 1"
           + " where p.supplierId = :supplierId and p.id in :ids")
   int archiveAll(UUID supplierId, Collection<UUID> ids, Instant now);
+
+  /** Categories of one supplier's active products, with how many products each has. */
+  @Query(
+      value =
+          "select new com.agentshelf.catalog.internal.persistence.CategoryCount(p.category, count(p))"
+              + " from Product p where p.supplierId = :supplierId and p.category is not null"
+              + " and p.status = com.agentshelf.catalog.internal.domain.ProductStatus.ACTIVE"
+              + " group by p.category order by p.category",
+      countQuery =
+          "select count(distinct p.category) from Product p where p.supplierId = :supplierId"
+              + " and p.category is not null"
+              + " and p.status = com.agentshelf.catalog.internal.domain.ProductStatus.ACTIVE")
+  Page<CategoryCount> categories(UUID supplierId, Pageable page);
 }

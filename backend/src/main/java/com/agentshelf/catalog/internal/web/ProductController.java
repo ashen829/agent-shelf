@@ -1,7 +1,10 @@
 package com.agentshelf.catalog.internal.web;
 
+import com.agentshelf.catalog.internal.application.ProductQuery;
+import com.agentshelf.catalog.internal.application.ProductSearch;
 import com.agentshelf.catalog.internal.application.ProductService;
 import com.agentshelf.catalog.internal.application.ProductSort;
+import com.agentshelf.catalog.internal.application.StockFilter;
 import com.agentshelf.catalog.internal.domain.ProductDetails;
 import com.agentshelf.catalog.internal.domain.ProductStatus;
 import com.agentshelf.identity.CurrentUser;
@@ -10,6 +13,7 @@ import com.agentshelf.shared.DomainException;
 import com.agentshelf.shared.Money;
 import com.agentshelf.shared.ProblemResponses;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,8 +21,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -46,18 +52,29 @@ import org.springframework.web.bind.annotation.RestController;
 class ProductController {
 
   private final ProductService products;
+  private final ProductSearch search;
   private final IdentityApi identity;
 
-  ProductController(ProductService products, IdentityApi identity) {
+  ProductController(ProductService products, ProductSearch search, IdentityApi identity) {
     this.products = products;
+    this.search = search;
     this.identity = identity;
   }
 
-  @Operation(operationId = "listProducts", summary = "One page of products")
+  @Operation(
+      operationId = "listProducts",
+      summary = "One page of products, optionally searched and filtered")
   @ApiResponse(responseCode = "200", description = "A page of products")
   @ApiResponse(
       responseCode = "400",
-      description = "Invalid page, size or sort",
+      description = "Invalid page, size, sort or filter",
+      content =
+          @Content(
+              mediaType = ProblemResponses.MEDIA_TYPE,
+              schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "422",
+      description = "Search text has too many words",
       content =
           @Content(
               mediaType = ProblemResponses.MEDIA_TYPE,
@@ -65,10 +82,32 @@ class ProductController {
   @GetMapping
   ProductPage list(
       @RequestParam(defaultValue = "ACTIVE") ProductStatus status,
+      @Parameter(description = "Words that must all appear in the SKU, name or category")
+          @RequestParam(required = false)
+          @Size(max = ProductSearch.MAX_TEXT_LENGTH)
+          @Nullable String q,
+      @Parameter(description = "Only this category (exact name, see /categories)")
+          @RequestParam(required = false)
+          @Size(max = 100)
+          @Nullable String category,
+      @RequestParam(required = false) @Nullable StockFilter stock,
       @RequestParam(defaultValue = "0") @Min(0) int page,
       @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
       @RequestParam(defaultValue = "NAME") ProductSort sort) {
-    return ProductPage.from(products.list(user(), status, page, size, sort));
+    return ProductPage.from(
+        search.search(
+            user().supplierId(), new ProductQuery(status, q, category, stock, sort), page, size));
+  }
+
+  @Operation(
+      operationId = "listProductCategories",
+      summary = "Categories of active products, with how many products each has")
+  @ApiResponse(responseCode = "200", description = "A page of categories, by name")
+  @GetMapping("/categories")
+  CategoryPage categories(
+      @RequestParam(defaultValue = "0") @Min(0) int page,
+      @RequestParam(defaultValue = "100") @Min(1) @Max(500) int size) {
+    return CategoryPage.from(search.categories(user().supplierId(), page, size));
   }
 
   @Operation(operationId = "getProduct", summary = "One product")

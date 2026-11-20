@@ -53,6 +53,9 @@ catalog/
 - Text that users sort by (names, SKUs) uses the ICU collation `und-x-icu`, so lists sort the way
   people read them ("anchor" < "Brick"). The database default sorts by raw character codes.
 - Money is `NUMERIC` plus a currency code, sent to clients as decimal text (never a float).
+- Product search: a generated `search_text` column (lower-case SKU, name, category) with a
+  `pg_trgm` trigram index, so "contains" searches stay fast as catalogs grow. The same search
+  serves the dashboard and, from M4, AI agents (`CatalogApi.searchProducts`).
 - Tenant isolation: `supplier_id` on every tenant table, enforced in every repository query.
   PostgreSQL row-level security can be added later as extra protection (decide in an ADR).
 

@@ -7,6 +7,51 @@
   </div>
 </header>
 
+<div class="filters" role="search" aria-label="Find products">
+  <mat-form-field class="search" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <input
+      #searchBox
+      matInput
+      type="search"
+      autocomplete="off"
+      [value]="searchText()"
+      (input)="onSearchInput(searchBox.value)"
+    />
+    <mat-hint>SKU, name or category</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label>Category</mat-label>
+    <mat-select [value]="category()" (selectionChange)="filterCategory($event.value)">
+      <mat-option value="">All categories</mat-option>
+      @if (categories.hasValue()) {
+        @for (c of categories.value().items; track c.name) {
+          <mat-option [value]="c.name">{{ c.name }} ({{ c.count }})</mat-option>
+        }
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label>Stock</mat-label>
+    <mat-select [value]="stock()" (selectionChange)="filterStock($event.value)">
+      <mat-option value="">Any stock</mat-option>
+      <mat-option value="IN_STOCK">In stock</mat-option>
+      <mat-option value="OUT_OF_STOCK">Out of stock</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label>Sort by</mat-label>
+    <mat-select [value]="sort()" (selectionChange)="sortBy($event.value)">
+      @for (s of sorts; track s.value) {
+        <mat-option [value]="s.value">{{ s.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
 <mat-button-toggle-group
   class="status"
   aria-label="Which products to show"
@@ -27,7 +72,19 @@
   @let page = products.value();
   @if (page.totalItems === 0) {
     <section class="empty">
-      @if (status() === 'ACTIVE') {
+      @if (filtered()) {
+        <h2>No products match</h2>
+        <p>
+          @if (q()) {
+            Nothing matches "{{ q() }}" with these filters.
+          } @else {
+            Nothing matches these filters.
+          }
+        </p>
+        <button mat-stroked-button type="button" (click)="clearFilters()">
+          Clear search and filters
+        </button>
+      } @else if (status() === 'ACTIVE') {
         <h2>No products yet</h2>
         <p>Import your price list from a CSV file, or add products one by one.</p>
         <div class="empty-actions">

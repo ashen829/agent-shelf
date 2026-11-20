@@ -11,10 +11,13 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { archiveProduct } from '../fn/products/archive-product';
 import { ArchiveProduct$Params } from '../fn/products/archive-product';
+import { CategoryPage } from '../models/category-page';
 import { createProduct } from '../fn/products/create-product';
 import { CreateProduct$Params } from '../fn/products/create-product';
 import { getProduct } from '../fn/products/get-product';
 import { GetProduct$Params } from '../fn/products/get-product';
+import { listProductCategories } from '../fn/products/list-product-categories';
+import { ListProductCategories$Params } from '../fn/products/list-product-categories';
 import { listProducts } from '../fn/products/list-products';
 import { ListProducts$Params } from '../fn/products/list-products';
 import { ProductPage } from '../models/product-page';
@@ -38,7 +41,7 @@ export class ProductsApi extends BaseService {
   static readonly ListProductsPath = '/api/v1/products';
 
   /**
-   * One page of products.
+   * One page of products, optionally searched and filtered.
    *
    *
    *
@@ -53,7 +56,7 @@ export class ProductsApi extends BaseService {
   }
 
   /**
-   * One page of products.
+   * One page of products, optionally searched and filtered.
    *
    *
    *
@@ -98,6 +101,39 @@ export class ProductsApi extends BaseService {
   createProduct(params: CreateProduct$Params, context?: HttpContext): Promise<ProductResponse> {
     const resp = this.createProduct$Response(params, context);
     return resp.then((r: StrictHttpResponse<ProductResponse>): ProductResponse => r.body);
+  }
+
+  /** Path part for operation `listProductCategories()` */
+  static readonly ListProductCategoriesPath = '/api/v1/products/categories';
+
+  /**
+   * Categories of active products, with how many products each has.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listProductCategories()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listProductCategories$Response(params?: ListProductCategories$Params, context?: HttpContext): Promise<StrictHttpResponse<CategoryPage>> {
+    const obs = listProductCategories(this.http, this.rootUrl, params, context);
+    return firstValueFrom(obs);
+  }
+
+  /**
+   * Categories of active products, with how many products each has.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listProductCategories$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listProductCategories(params?: ListProductCategories$Params, context?: HttpContext): Promise<CategoryPage> {
+    const resp = this.listProductCategories$Response(params, context);
+    return resp.then((r: StrictHttpResponse<CategoryPage>): CategoryPage => r.body);
   }
 
   /** Path part for operation `getProduct()` */

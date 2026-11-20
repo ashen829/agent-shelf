@@ -53,6 +53,32 @@ class CatalogTenantIsolationIT {
   }
 
   @Test
+  void searchAndCategoriesOnlyShowTheCallersProducts() {
+    supplierB.post(
+        "/api/v1/products",
+        "{\"sku\": \"B-1\", \"name\": \"PVC pipe\", \"category\": \"Pipes\", \"price\": \"1\", \"stockQty\": 1}");
+    supplierA.post(
+        "/api/v1/products",
+        "{\"sku\": \"A-1\", \"name\": \"PVC pipe\", \"category\": \"Pipes\", \"price\": \"1\", \"stockQty\": 1}");
+
+    assertThat(
+            json(supplierB.get("/api/v1/products?q=pvc"))
+                .path("items")
+                .valueStream()
+                .map(p -> p.path("sku").asString()))
+        .containsExactly("B-1");
+    assertThat(json(supplierB.get("/api/v1/products?category=Pipes")).path("totalItems").asLong())
+        .isEqualTo(1);
+    assertThat(
+            json(supplierB.get("/api/v1/products/categories"))
+                .path("items")
+                .get(0)
+                .path("count")
+                .asLong())
+        .isEqualTo(1);
+  }
+
+  @Test
   void skusOnlyNeedToBeUniqueWithinOneSupplier() {
     assertThat(supplierB.post("/api/v1/products", product("SHARED-SKU", "5")).statusCode())
         .isEqualTo(201);

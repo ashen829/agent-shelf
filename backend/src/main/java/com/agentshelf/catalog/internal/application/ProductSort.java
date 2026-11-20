@@ -7,7 +7,9 @@ public enum ProductSort {
   NAME(Sort.by("name").ascending().and(Sort.by("id"))),
   NAME_DESC(Sort.by("name").descending().and(Sort.by("id"))),
   SKU(Sort.by("sku").ascending().and(Sort.by("id"))),
-  UPDATED_DESC(Sort.by("updatedAt").descending().and(Sort.by("id")));
+  UPDATED_DESC(Sort.by("updatedAt").descending().and(Sort.by("id"))),
+  PRICE(Sort.by("priceAmount").ascending().and(Sort.by("id"))),
+  PRICE_DESC(Sort.by("priceAmount").descending().and(Sort.by("id")));
 
   private final Sort sort;
 

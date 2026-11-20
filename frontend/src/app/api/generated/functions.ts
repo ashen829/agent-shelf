@@ -27,6 +27,8 @@ export type { ListProducts$Params as ListProducts$Params } from './fn/products/l
 export { listProducts as listProducts } from './fn/products/list-products';
 export type { CreateProduct$Params as CreateProduct$Params } from './fn/products/create-product';
 export { createProduct as createProduct } from './fn/products/create-product';
+export type { ListProductCategories$Params as ListProductCategories$Params } from './fn/products/list-product-categories';
+export { listProductCategories as listProductCategories } from './fn/products/list-product-categories';
 export type { GetProduct$Params as GetProduct$Params } from './fn/products/get-product';
 export { getProduct as getProduct } from './fn/products/get-product';
 export type { UpdateProduct$Params as UpdateProduct$Params } from './fn/products/update-product';

@@ -2,7 +2,6 @@ package com.agentshelf.catalog.internal.application;
 
 import com.agentshelf.catalog.internal.domain.Product;
 import com.agentshelf.catalog.internal.domain.ProductDetails;
-import com.agentshelf.catalog.internal.domain.ProductStatus;
 import com.agentshelf.catalog.internal.persistence.ProductRepository;
 import com.agentshelf.identity.CurrentUser;
 import com.agentshelf.shared.ConflictException;
@@ -12,8 +11,6 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +24,6 @@ public class ProductService {
 
   ProductService(ProductRepository products) {
     this.products = products;
-  }
-
-  @Transactional(readOnly = true)
-  public Page<Product> list(
-      CurrentUser user, ProductStatus status, int page, int size, ProductSort sort) {
-    return products.findBySupplierIdAndStatus(
-        user.supplierId(), status, PageRequest.of(page, size, sort.sort()));
   }
 
   @Transactional(readOnly = true)
