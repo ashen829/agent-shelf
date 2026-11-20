@@ -29,7 +29,7 @@ Scope:
 - Product create, read, update and delete
 - CSV import as a background job, with a column-mapping screen and an error report
 - Product list with search, filters and pagination
-- Excel import as a small follow-up slice (M1.1)
+- Excel import (.xlsx, first sheet) as a small follow-up slice (M1.1)
 
 Done when:
 - A supplier imports 500 products from a CSV, fixes the reported errors and searches them.

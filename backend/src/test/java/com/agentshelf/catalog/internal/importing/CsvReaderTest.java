@@ -61,16 +61,16 @@ class CsvReaderTest {
     byte[] latin1 = "sku,name\nA,Café\n".getBytes(StandardCharsets.ISO_8859_1);
 
     assertThatThrownBy(() -> CsvReader.inspect(latin1))
-        .isInstanceOf(InvalidCsvException.class)
+        .isInstanceOf(InvalidImportFileException.class)
         .hasMessageContaining("CSV UTF-8");
   }
 
   @Test
   void rejectsEmptyFilesAndHeaderOnlyFiles() {
     assertThatThrownBy(() -> CsvReader.inspect(new byte[0]))
-        .isInstanceOf(InvalidCsvException.class);
+        .isInstanceOf(InvalidImportFileException.class);
     assertThatThrownBy(() -> CsvReader.inspect(utf8("sku,name\n")))
-        .isInstanceOf(InvalidCsvException.class)
+        .isInstanceOf(InvalidImportFileException.class)
         .hasMessageContaining("header row");
   }
 
@@ -81,14 +81,14 @@ class CsvReaderTest {
       csv.append('S').append(i).append('\n');
     }
     assertThatThrownBy(() -> CsvReader.inspect(utf8(csv.toString())))
-        .isInstanceOf(InvalidCsvException.class)
+        .isInstanceOf(InvalidImportFileException.class)
         .hasMessageContaining("20,000");
   }
 
   @Test
   void rejectsAnUnclosedQuote() {
     assertThatThrownBy(() -> CsvReader.inspect(utf8("sku,name\nA,\"broken\n")))
-        .isInstanceOf(InvalidCsvException.class)
+        .isInstanceOf(InvalidImportFileException.class)
         .hasMessageContaining("quote");
   }
 }

@@ -9,7 +9,7 @@
     "url" : "/"
   } ],
   "tags" : [ {
-    "description" : "CSV price list imports, run in the background",
+    "description" : "CSV and Excel price list imports, run in the background",
     "name" : "Imports"
   }, {
     "description" : "Supplier sign-up, login and the current account",
@@ -295,10 +295,10 @@
                 }
               }
             },
-            "description" : "Not a usable CSV file (encoding, rows, quotes)"
+            "description" : "Not a usable CSV or Excel file (type, encoding, rows, quotes)"
           }
         },
-        "summary" : "Upload a CSV file (UTF-8, at most 10 MB and 20,000 rows)",
+        "summary" : "Upload a CSV file (UTF-8) or an Excel file (.xlsx, first sheet), at most 10 MB and 20,000 rows",
         "tags" : [ "Imports" ]
       }
     },

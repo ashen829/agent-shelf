@@ -6,7 +6,7 @@ import { ImportsApi } from '../../../../api/generated/services';
 import { toProblem } from '../../../../core/errors/problem';
 import { MAX_FILE_BYTES } from '../import-labels';
 
-/** Step 1: choose a CSV file. It is checked and stored; matching columns comes next. */
+/** Step 1: choose an Excel or CSV file. It is checked and stored; matching columns comes next. */
 @Component({
   selector: 'app-import-upload',
   imports: [MatButtonModule, MatProgressBarModule, RouterLink],
@@ -49,8 +49,8 @@ export class ImportUpload {
       return;
     }
     this.error.set(null);
-    if (!/\.(csv|txt)$/i.test(file.name)) {
-      this.error.set('Choose a .csv file. In Excel, use Save As and choose "CSV UTF-8".');
+    if (!/\.(xlsx|csv|txt)$/i.test(file.name)) {
+      this.error.set('Choose an Excel file (.xlsx) or a CSV file (.csv).');
       return;
     }
     if (file.size > MAX_FILE_BYTES) {

@@ -32,7 +32,7 @@ export class Dashboard {
       title: 'Import your price list',
       detail: 'Upload a CSV file, match its columns and fix any rows with errors.',
       done: false,
-      link: { path: '/catalog/import', label: 'Import CSV' },
+      link: { path: '/catalog/import', label: 'Import price list' },
     },
     {
       title: 'Review AI suggestions',
