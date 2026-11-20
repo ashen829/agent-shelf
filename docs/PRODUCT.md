@@ -79,8 +79,9 @@ Quote status flow: `PENDING` → `APPROVED`, `REJECTED` or `EXPIRED`.
 - Create a suggestion only when something actually changes.
 - Fields: name, category, unit (from a fixed list) and a short description where there is none.
   SKU, price and stock are never suggested.
-- The server checks every suggestion again (allowed field, length, unit list, confidence) and
-  drops anything that breaks a rule.
+- The server checks every suggestion again (allowed field, length, unit list, confidence of at
+  least 0.5) and drops anything that breaks a rule. A unit is only filled in or respelled
+  ("Nos" to "pcs"), never changed to a different unit.
 
 ## Demo scenario (M6)
 1. A fake wholesaler with about 500 hardware products and deliberately messy names.

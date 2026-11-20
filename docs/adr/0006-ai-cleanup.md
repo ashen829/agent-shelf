@@ -43,8 +43,11 @@ Each request:
 Checks on the server (`SuggestionRules`), whatever the model says:
 - only those four fields: never SKU, price or stock;
 - length limits, no control characters, one line except descriptions;
-- units only from a fixed list; descriptions only where the product has none;
-- no "change" to the current value; at most one change per field; confidence from 0 to 1;
+- units only from a fixed list, and only to fill a missing unit or respell the current one
+  ("Nos" to "pcs"); never a different unit ("tube" to "pcs" would change what is sold);
+- descriptions only where the product has none;
+- no "change" to the current value; at most one change per field;
+- confidence at least 0.5: below that the model itself doubts the change;
 - anything else is dropped and counted (`suggestions_dropped`). Nothing is "fixed up".
 
 The feature is off unless `AGENTSHELF_ENRICHMENT_ENABLED=true`, and then it needs
@@ -64,10 +67,12 @@ The feature is off unless `AGENTSHELF_ENRICHMENT_ENABLED=true`, and then it need
   several products, and the prompt is small anyway.
 
 ## Consequences
-- Cost: about 1,000 input and 300 output tokens per product. At Haiku 5.5 batch prices ($0.05 per
-  million input tokens, $0.25 per million output tokens) 500 products cost about $0.06, well under
-  the $1 target. The system prompt may be shorter than the minimum the API caches, so caching may
-  not apply; the estimate assumes it doesn't.
+- Cost, measured against the real API (20 messy products, 2026-11-20): about 140 uncached input
+  tokens, 900 tokens read from the prompt cache and 175 output tokens per product. At Haiku 5.5
+  batch prices that is $0.0012 for 20 products, about **$0.03 for 500** (target: under $1).
+  Output tokens are most of the cost. The batch took 6.5 minutes.
+- The same run checked prompt injection: product text asking to "ignore all rules", set prices
+  to 0 or rename products changed nothing; the suggested name simply dropped that text.
 - A batch can take minutes and, at worst, up to 24 hours. The dashboard shows the job's status.
 - If saving the batch ID fails right after submitting, the retry submits again and that batch is
   billed twice. Rare, and cheap at these prices.
