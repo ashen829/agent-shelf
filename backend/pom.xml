@@ -20,11 +20,11 @@
     <java.version>25</java.version>
     <spring-modulith.version>2.1.2</spring-modulith.version>
     <error-prone.version>2.52.0</error-prone.version>
-    <nullaway.version>0.14.3</nullaway.version>
+    <nullaway.version>0.14.4</nullaway.version>
     <spotless.version>3.11.0</spotless.version>
     <google-java-format.version>2.0.0</google-java-format.version>
     <springdoc.version>3.2.0</springdoc.version>
-    <db-scheduler.version>17.0.0</db-scheduler.version>
+    <db-scheduler.version>17.1.0</db-scheduler.version>
     <commons-csv.version>1.14.1</commons-csv.version>
   </properties>
 
